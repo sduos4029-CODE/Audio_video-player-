@@ -1,0 +1,28 @@
+name: Publish Android APK
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Publish tested APK as release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
+          Pulse Media Player for Android 8.0 and later.
+
+          Download Pulse-Media-Player.apk from Assets below and open it on your Android phone.
+
+          Features: normal and dot-matrix players, color themes, filled/outline controls, local audio, direct HTTPS audio streaming, permitted offline downloads, background media controls, and opt-in player over the lock screen.
+
+          This is a debug-signed preview build. Compilation, Android lint and APK signature checks passed. Physical-device playback and lock-screen behavior remain unverified. No commercial music catalog is bundled.
+          NOTES
+          gh release create "$RELEASE_TAG" downloads/Pulse-Media-Player.apk --verify-tag --title "Pulse Media Player $RELEASE_TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
