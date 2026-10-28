@@ -1,39 +1,37 @@
 # Pulse Media Player for Android
 
-Native Android audio player with a pure-black interface. Requires Android 8.0 or later.
+Pure-black Android 8+ audio and video player. Version 1.1 adds readable LED lettering, video and YouTube link handling.
 
-## Download Android APK
+## Download
 
-[Download Pulse Media Player APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player.apk)
+[Download Pulse Media Player v1.1 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.1.apk)
 
-This is a debug build for testing. Open the link in your Android browser, download the APK, and allow installation from that browser if prompted. Device playback and lock-screen behavior have not yet been verified.
+This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
-## Features
+## Using the player
 
-- Normal rendering or full-interface dot-matrix rendering (artwork, text and controls).
-- White, red, yellow, blue, purple, red/yellow/white and blue/purple/white themes.
-- Filled or outline play/pause button, seek bar, ±10 seconds and device volume.
-- Local audio import using Android's document picker; no broad storage permission.
-- Direct HTTPS audio streaming and permitted downloads to an app-private offline library.
-- Background playback, audio focus, headphone-disconnect pause, media notification and system lock-screen controls.
-- Optional full-screen player over the lock screen while this activity is open. It does not bypass authentication, replace Android's secure lock screen, or launch itself from the background. Behavior varies by device.
-- Embedded local artwork when available, with a drawn moon/ocean fallback.
+- **Library** imports audio and video through Android's document picker; supported files retain permission across restarts.
+- **Online** accepts a YouTube watch/Shorts/live/share link, or a direct HTTPS media URL. Website pages from other services are not media URLs. HTTP errors and decoder failures can be inspected by tapping the error line at the bottom.
+- Direct streams use AndroidX Media3, including progressive files, HLS and DASH. Typical containers include MP3, WAV, MP4, WebM, Matroska and Ogg; actual codec and DRM support depend on the device. No player can promise all formats.
+- Direct/local sources start in **audio-only** mode. Tap their artwork or use **Menu → Watch current video**, then choose **Audio only** to return. Leaving the video screen, including locking the phone, detaches video and keeps service audio playing.
+- **Download** saves permitted direct files (maximum 250 MB) into the offline library. Adaptive playlists, DRM sources and YouTube downloads are not supported. App-private downloads are deleted on uninstall.
+- **Menu** controls white/red/yellow/blue/purple/combination themes, normal/dot-matrix rendering, filled/outline buttons and opt-in lock-screen mode. Dot mode uses an explicit 5×7 font and coverage sampling for complete outlines. Embedded artwork or a local video frame replaces the default moon when available, and is rendered entirely as dots in matrix mode.
+- Playback includes ±10 seconds, seeking, device volume, audio focus, headphone-disconnect pause, media notification and system lock-screen controls.
+- Optional player over the lock screen works while the activity is open, where Android allows it. It neither replaces secure authentication nor forces itself open from the background.
 
-## Run
+## YouTube
 
-Open this directory in Android Studio, use JDK 17 or 21, install Android SDK 35, sync, then run `app` on a device. Grant notification permission for media notifications.
+YouTube links open the official embedded player. The app requests the real video title and thumbnail from YouTube oEmbed; the preview thumbnail follows normal/dot-matrix mode. The official video player itself stays intact. Some videos disallow embedding or require sign-in; **Open in YouTube** is the fallback. YouTube playback pauses when leaving this screen. Audio-only, screen-off playback and downloading are not supported for YouTube; those functions apply to direct/local sources. No paid catalog, account backend, audio extraction or DRM bypass is included.
 
-From a shell with the Android SDK configured:
+## Build and test
+
+Open in Android Studio with JDK 17/21 and Android SDK 35, or run:
 
 ```sh
-./gradlew :app:assembleDebug :app:lintDebug
+./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Menu (top right): theme, dot matrix, button fill and lock-screen mode. Tap the Pulse Media Player title or bottom center to toggle normal/dot-matrix. Library imports or plays local and downloaded tracks. Online accepts a direct HTTPS audio URL and optional title; choose Stream or Download. Downloads have a 250 MB limit. App-private downloads are removed on uninstall.
+Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube link validation and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. These do not establish hardware decoding or live YouTube availability.
 
-There is no bundled commercial music catalog, account backend, DRM bypass or Spotify/YouTube/JioSaavn integration. Service web-page links are not audio URLs. Use sources you have permission to stream/download. The waveform is a playback-driven decorative animation, not a measured spectrum. Live streams may not support seeking.
-
-## Device validation
-
-Build and lint do not verify physical-device behavior. On Android 13+ verify notification permission; import an audio file with embedded art; play/pause and seek in app and media notification; disconnect headphones; switch to another audio app to check focus; stream a permitted direct HTTPS audio link; download and play it with networking disabled; test all themes and normal/dot modes. Enable lock-screen mode, leave Pulse Media Player open, lock the device, and verify the full-screen player where supported and device authentication when leaving it. Test TalkBack separately: the custom canvas currently exposes a summary rather than individually focusable controls.
+On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, embedded playback and fallback; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.
