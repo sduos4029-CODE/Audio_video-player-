@@ -2,11 +2,14 @@
   'use strict';
   if (!/(^|\.)youtube\.com$/i.test(location.hostname) || window.__pulseFilterInstalled) return;
   Object.defineProperty(window, '__pulseFilterInstalled', { value: true });
+  var stats = { inspectedPlayers: 0, removedFields: 0, skipClicks: 0 };
+  Object.defineProperty(window, '__pulseFilterStats', { value: stats });
   var adFields = ['adPlacements', 'playerAds', 'adSlots', 'adBreakParams'];
   function cleanPlayer(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
     if (value.videoDetails || value.streamingData || value.playabilityStatus) {
-      adFields.forEach(function (key) { try { delete value[key]; } catch (_) {} });
+      stats.inspectedPlayers++;
+      adFields.forEach(function (key) { try { if (Object.prototype.hasOwnProperty.call(value, key) && delete value[key]) stats.removedFields++; } catch (_) {} });
     }
     if (value.playerResponse && typeof value.playerResponse === 'object') cleanPlayer(value.playerResponse);
     return value;
@@ -73,7 +76,7 @@
     if (!document.getElementById('pulse-filter')) { var style = document.createElement('style'); style.id = 'pulse-filter'; style.textContent = css; document.documentElement.appendChild(style); }
     // Click only an available skip control. Never seek the video to its end.
     document.querySelectorAll('.ytp-ad-skip-button,.ytp-ad-skip-button-modern,.ytp-skip-ad-button').forEach(function (button) {
-      if (!button.disabled && button.getClientRects().length) button.click();
+      if (!button.disabled && button.getClientRects().length) button.click(); stats.skipClicks++;
     });
   }
   var pending = false;

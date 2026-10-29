@@ -1,16 +1,16 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.5 gives YouTube the full page area with a small floating Pulse menu, immersive video fullscreen, and stronger browser filtering. YouTube browsing and playback stay inside Pulse through Android System WebView; installed YouTube apps are not required.
+Pure-black Android 8+ audio and video player. Version 1.6 adds a standard searchable library and native normal-mode player, fixes duplicate safe-area propagation, and adds local filtering/privacy diagnostics. Dot-matrix mode and in-app YouTube browsing remain available.
 
 ## Download
 
-[Download Pulse Media Player v1.5 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.5.apk)
+[Download Pulse Media Player v1.6 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.6.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
 ## Using the player
 
-- **Library** imports audio and video through Android's document picker; supported files retain permission across restarts.
+- **Library** is a full searchable screen with Audio/Video/Downloads filters, multiple-file import, artwork, artist/duration metadata and track menus. Selecting a track opens the native player; imported URI permissions persist where the document provider supports it. Removing an item removes its library entry without deleting the original file.
 - **Online** accepts a YouTube watch/Shorts/live/share link, or a direct HTTPS media URL. Website pages from other services are not media URLs. HTTP errors and decoder failures can be inspected by tapping the error line at the bottom.
 - Direct streams use AndroidX Media3, including progressive files, HLS and DASH. Typical containers include MP3, WAV, MP4, WebM, Matroska and Ogg; actual codec and DRM support depend on the device. No player can promise all formats.
 - Direct/local sources start in **audio-only** mode. Tap their artwork or use **Menu → Watch current video**, then choose **Audio only** to return. Leaving the video screen, including locking the phone, detaches video and keeps service audio playing.
@@ -52,3 +52,7 @@ On a physical device, test local audio and video with embedded artwork, ±10 sec
 On a real phone, additionally test the notification and ±10-second controls while locked, background audio with the setting enabled/disabled, headset disconnection, switching back to native playback, and filter-enabled playback across several YouTube videos. Verify the toolbar remains touchable around the phone’s status icons and camera cutout.
 
 For v1.5, additionally check full-page browsing, floating-menu reachability, optional toolbar, video fullscreen enter/exit, ad behavior before and after navigation, and filter off/on reloads on a real phone. The Node fixture suite executes the exact bundled filter script in isolated test contexts; it does not contact YouTube.
+
+## v1.6 privacy and architecture review
+
+[Playback engines, modified APKs and security review](docs/PLAYBACK_AND_SECURITY_REVIEW.md) explains the official Brave/patcher/extractor sources examined, what was implemented and the remaining limitations. Current preview builds do not provide all Premium features or verified ad-free YouTube playback. Use **⋮ → Filter diagnostics** for local counters, and **Clear browsing data** to sign out/clear web data without erasing local music.

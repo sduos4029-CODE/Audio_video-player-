@@ -12,7 +12,7 @@ public class PlaybackService extends Service {
  public static PlaybackService current;
  androidx.media3.exoplayer.ExoPlayer player; MediaSession session; AudioManager audio; AudioFocusRequest focus;
  public String title="Choose your soundtrack", error=""; public Bitmap artwork; public boolean loading=false;
- public boolean audioOnly=true; public String source=""; private int generation=0; private boolean resumeOnFocus; private boolean noisyRegistered;
+ public String artist="";public boolean hasVideo;public boolean audioOnly=true; public String source=""; private int generation=0; private boolean resumeOnFocus; private boolean noisyRegistered;
  private final BroadcastReceiver noisy=new BroadcastReceiver(){public void onReceive(Context c,Intent i){pause();}};
  public void onCreate(){super.onCreate();current=this;audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   focus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()).setOnAudioFocusChangeListener(change->{if(change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK){if(player!=null)player.setVolume(.2f);}else if(change<0){resumeOnFocus=change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT&&playing();pause();}else {if(player!=null)player.setVolume(1);if(resumeOnFocus){resumeOnFocus=false;play();}}}).build();
@@ -24,20 +24,21 @@ public class PlaybackService extends Service {
  void load(Uri uri,String name){
   if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);
   final int request=++generation; source=uri.toString();
-  if(player!=null)player.release(); artwork=null; title=name; error="";loading=true;
+  if(player!=null)player.release(); artwork=null;artist="";hasVideo=false;title=name; error="";loading=true;
   player=new androidx.media3.exoplayer.ExoPlayer.Builder(this).build();
   player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,audioOnly).build());
   player.addListener(new androidx.media3.common.Player.Listener(){
    public void onPlaybackStateChanged(int state){loading=state==androidx.media3.common.Player.STATE_BUFFERING;if(state==androidx.media3.common.Player.STATE_READY&&player.getPlayWhenReady())play();update();}
    public void onIsPlayingChanged(boolean active){update();}
    public void onPlayerError(androidx.media3.common.PlaybackException e){loading=false;error=e.getErrorCodeName()+": Check the URL, network or codec support.";Throwable cause=e;while(cause!=null){if(cause instanceof androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException){error="Server returned HTTP "+((androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)cause).responseCode+". Use a direct playable media link.";break;}cause=cause.getCause();}update();}
-   public void onMediaMetadataChanged(androidx.media3.common.MediaMetadata metadata){if(metadata.artworkData!=null){artwork=android.graphics.BitmapFactory.decodeByteArray(metadata.artworkData,0,metadata.artworkData.length);update();}}
+   public void onTracksChanged(androidx.media3.common.Tracks tracks){hasVideo=false;for(androidx.media3.common.Tracks.Group group:tracks.getGroups())if(group.getType()==androidx.media3.common.C.TRACK_TYPE_VIDEO)hasVideo=true;}
+   public void onMediaMetadataChanged(androidx.media3.common.MediaMetadata metadata){if(metadata.artist!=null)artist=metadata.artist.toString();if(metadata.artworkData!=null){artwork=Artwork.decode(metadata.artworkData,512);update();}}
   });
   player.setMediaItem(androidx.media3.common.MediaItem.fromUri(uri));player.prepare();play();update();
   new Thread(()->{Bitmap result=null;try{MediaMetadataRetriever r=new MediaMetadataRetriever();try{
    if("https".equals(uri.getScheme()))return;
    r.setDataSource(this,uri);byte[] bytes=r.getEmbeddedPicture();
-   result=bytes!=null?android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.length):r.getFrameAtTime(0);
+   result=bytes!=null?Artwork.decode(bytes,512):Build.VERSION.SDK_INT>=27?r.getScaledFrameAtTime(0,MediaMetadataRetriever.OPTION_CLOSEST_SYNC,512,512):null;
   }finally{r.release();}}catch(Exception ignored){}
   final Bitmap image=result;new Handler(getMainLooper()).post(()->{if(request==generation){artwork=image;update();}});
   }).start();

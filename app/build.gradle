@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
  namespace 'com.noir.player'
  compileSdk 35
- defaultConfig { applicationId 'com.noir.player'; minSdk 26; targetSdk 35; versionCode 6; versionName '1.5' }
+ defaultConfig { applicationId 'com.noir.player'; minSdk 26; targetSdk 35; versionCode 7; versionName '1.6' }
  testOptions { unitTests.includeAndroidResources = true }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }

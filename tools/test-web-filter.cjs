@@ -14,7 +14,7 @@ function setup(responseData, options = {}) {
 }
 const payload=()=>({videoDetails:{videoId:'example'},streamingData:{formats:[{url:'https://example.test/video'}]},playabilityStatus:{status:'OK'},captions:{keep:true},adPlacements:[{ad:true}],playerAds:[1],adSlots:[2]});
 (async()=>{
-  const initial=payload(), test=setup(payload(),{initial});assert.equal(initial.adPlacements,undefined);assert.equal(initial.streamingData.formats.length,1);
+  const initial=payload(), test=setup(payload(),{initial});assert.equal(initial.adPlacements,undefined);assert.equal(initial.streamingData.formats.length,1);assert.equal(test.context.__pulseFilterStats.removedFields,3);
   test.context.ytInitialPlayerResponse=payload();assert.equal(test.context.ytInitialPlayerResponse.playerAds,undefined);
   const body='{request-body-is-preserved}';const r=await test.context.fetch('https://www.youtube.com/youtubei/v1/player',{method:'POST',body,credentials:'include'});const clean=await r.json();assert.equal(clean.adSlots,undefined);assert.equal(clean.playabilityStatus.status,'OK');assert.equal(clean.captions.keep,true);assert.equal(test.requests[0][1].body,body);assert.equal(test.requests[0][1].credentials,'include');
   const untouched=await test.context.fetch('https://www.youtube.com/youtubei/v1/browse');assert.equal((await untouched.json()).adSlots.length,1);
