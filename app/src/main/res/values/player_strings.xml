@@ -1,4 +1,5 @@
 <resources>
  <string name="player_filled_button">Filled play button</string>
  <string name="player_lock_screen">Show player on lock screen</string>
+ <string name="video_zoom_percent">%1$d%%</string>
 </resources>
