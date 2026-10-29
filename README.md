@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.2 replaces the unreliable YouTube embed with official YouTube / YouTube Music app handoff and a browser fallback.
+Pure-black Android 8+ audio and video player. Version 1.3 keeps YouTube browsing and playback inside Pulse through Android System WebView. The installed YouTube / YouTube Music apps are not required.
 
 ## Download
 
-[Download Pulse Media Player v1.2 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.2.apk)
+[Download Pulse Media Player v1.3 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.3.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -21,7 +21,9 @@ This is a debug-signed preview build. Compilation, Android lint, JVM regression 
 
 ## YouTube
 
-YouTube and YouTube Music links open a native preview with the real title/thumbnail when metadata is available. Choose **Play in YouTube Music** or **Play in YouTube**. Pulse tries the selected official app, then the other app, then a browser. Missing apps are handled without crashing. Pulse pauses its current track only after a successful handoff. Playback takes place outside Pulse; ads, account entitlements, downloads and background playback follow the selected service's own rules. Pulse does not unlock Premium. Its own audio-only, offline and lock-screen player features apply to local files and direct media streams.
+**Online → Browse YouTube / Browse YouTube Music** opens the live website inside Pulse. Paste a video link to open its web watch page inside the same Activity. Search, thumbnails and playback use the website's controls. Links to installed apps and external sites are blocked; Pulse launches no external player/browser. Back, reload and website fullscreen video are supported. Update Android System WebView if a site fails to load. Website availability, login restrictions and playback compatibility vary by device; no live device playback is verified by unit tests.
+
+This is an in-app browser, not a separate YouTube backend or native catalog player. YouTube pages retain their own UI and ads; they are not converted into Pulse's dot-matrix player. This build pauses web audio/video when leaving the screen or locking. It does not provide YouTube audio-only, background playback, offline downloads or Premium entitlements. Pulse's own themed native audio/video player and background controls still apply to local files and direct media streams.
 
 ## Build and test
 
@@ -32,6 +34,6 @@ Open in Android Studio with JDK 17/21 and Android SDK 35, or run:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube / Music link validation, simulated official-app/browser fallback handling and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. These do not establish hardware decoding or live YouTube availability.
+Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube / Music link validation, navigation-policy and simulated in-app routing and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. These do not establish hardware decoding or live YouTube availability.
 
-On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, official app handoff and browser fallback; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.
+On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, in-app navigation, playback and fullscreen with no app handoff; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.

@@ -1,29 +1,45 @@
 package com.noir.player;
 
-import android.app.*;
-import android.os.*;
-import android.content.*;
-import android.graphics.*;
+import android.app.Activity;
+import android.os.Bundle;
+import android.graphics.Color;
 import android.view.*;
+import android.webkit.*;
 import android.widget.*;
-import java.net.*;
-import java.io.*;
-import org.json.*;
 
-/** Native preview and official-app handoff; no embedded player. */
+/** Browser-based YouTube inside Pulse. No external app launch or media extraction. */
 public class YouTubeActivity extends Activity {
- Bitmap thumbnail; String id; TextView title; boolean dotMode;
- protected void onCreate(Bundle b){super.onCreate(b);id=getIntent().getStringExtra("id");if(id==null||!id.matches("[A-Za-z0-9_-]{11}")){finish();return;}
-  dotMode=getSharedPreferences("noir",0).getBoolean("dots",false);
-  LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(20,12,20,12);root.setBackgroundColor(Color.BLACK);
-  title=new TextView(this);title.setText("YouTube • Loading video details…");title.setTextColor(Color.WHITE);title.setTextSize(18);root.addView(title);
-  View art=new View(this){Paint paint=new Paint(3);RectF bounds=new RectF();protected void onDraw(Canvas c){if(thumbnail==null)return;float scale=Math.min(getWidth()/(float)thumbnail.getWidth(),getHeight()/(float)thumbnail.getHeight());float w=thumbnail.getWidth()*scale,h=thumbnail.getHeight()*scale,left=(getWidth()-w)/2,top=(getHeight()-h)/2;if(!dotMode){bounds.set(left,top,left+w,top+h);c.drawBitmap(thumbnail,null,bounds,paint);return;}for(int y=0;y<thumbnail.getHeight();y+=4)for(int x=0;x<thumbnail.getWidth();x+=4){int v=thumbnail.getPixel(x,y);int light=(Color.red(v)*54+Color.green(v)*183+Color.blue(v)*19)/256;if(light<20)continue;paint.setColor(Color.rgb(light,light,light));c.drawCircle(left+x*scale,top+y*scale,Math.max(1,scale*1.4f),paint);}}};root.addView(art,new LinearLayout.LayoutParams(-1,(int)(180*getResources().getDisplayMetrics().density)));
-  TextView note=new TextView(this);note.setText("Choose an app below to play. Playback uses that app and your account; ads and Premium features follow its settings.");note.setTextColor(0xffcccccc);root.addView(note);
-  Button music=new Button(this);music.setText("Play in YouTube Music");music.setOnClickListener(v->open(true));root.addView(music);
-  Button video=new Button(this);video.setText("Play in YouTube");video.setOnClickListener(v->open(false));root.addView(video);
-  setContentView(root);
-  new Thread(()->{try{String endpoint="https://www.youtube.com/oembed?format=json&url="+URLEncoder.encode("https://www.youtube.com/watch?v="+id,"UTF-8");JSONObject info=new JSONObject(read(endpoint));String thumb=info.getString("thumbnail_url");URL url=new URL(thumb);if(!url.getProtocol().equals("https")||!url.getHost().endsWith(".ytimg.com"))return;URLConnection conn=url.openConnection();conn.setConnectTimeout(10000);conn.setReadTimeout(10000);try(InputStream in=conn.getInputStream()){thumbnail=BitmapFactory.decodeStream(in);}runOnUiThread(()->{title.setText(info.optString("title","YouTube video"));art.invalidate();});}catch(Exception e){runOnUiThread(()->title.setText("YouTube • Choose an app below to play"));}}).start();
+ boolean rendererGone; WebView web; TextView status; ProgressBar progress; FrameLayout frame; View fullscreen; WebChromeClient.CustomViewCallback fullscreenCallback;
+ @android.annotation.SuppressLint("SetJavaScriptEnabled") // Required for trusted YouTube pages; no native JS bridge is exposed.
+ protected void onCreate(Bundle state){
+  super.onCreate(state);if(PlaybackService.current!=null)PlaybackService.current.pause();
+  frame=new FrameLayout(this);LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(Color.BLACK);
+  LinearLayout toolbar=new LinearLayout(this);Button back=new Button(this);back.setText("Back");back.setOnClickListener(v->onBackPressed());toolbar.addView(back);
+  TextView heading=new TextView(this);heading.setText("PULSE • ONLINE");heading.setTextColor(Color.WHITE);heading.setGravity(Gravity.CENTER);toolbar.addView(heading,new LinearLayout.LayoutParams(0,-1,1));Button reload=new Button(this);reload.setText("Reload");reload.setOnClickListener(v->{if(rendererGone)recreate();else web.reload();});toolbar.addView(reload);root.addView(toolbar);
+  status=new TextView(this);status.setText("Loading inside Pulse…");status.setTextColor(0xffcccccc);status.setPadding(16,8,16,8);root.addView(status);
+  progress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);root.addView(progress,new LinearLayout.LayoutParams(-1,6));
+  web=new WebView(this);web.setBackgroundColor(Color.BLACK);WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setMediaPlaybackRequiresUserGesture(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setSafeBrowsingEnabled(true);CookieManager.getInstance().setAcceptThirdPartyCookies(web,false);
+  web.setWebViewClient(new WebViewClient(){
+   public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){return blockNavigation(request.getUrl().toString());}
+   public boolean shouldOverrideUrlLoading(WebView view,String url){return blockNavigation(url);}
+   public void onPageFinished(WebView view,String url){status.setText("Playback stays in Pulse • web controls and availability apply");}
+   public void onReceivedError(WebView view,WebResourceRequest request,WebResourceError error){if(request.isForMainFrame())status.setText("Page failed to load. Check your connection, update Android System WebView, then tap Reload.");}
+   public void onReceivedHttpError(WebView view,WebResourceRequest request,WebResourceResponse response){if(request.isForMainFrame())status.setText("Website returned HTTP "+response.getStatusCode()+". Tap Reload to retry.");}
+   public boolean onRenderProcessGone(WebView view,RenderProcessGoneDetail detail){rendererGone=true;view.destroy();status.setText("Web playback stopped. Tap Reload to reopen the page.");return true;}
+  });
+  web.setWebChromeClient(new WebChromeClient(){
+   public void onProgressChanged(WebView view,int value){progress.setProgress(value);progress.setVisibility(value==100?View.GONE:View.VISIBLE);}
+   public void onShowCustomView(View view,CustomViewCallback callback){if(fullscreen!=null){callback.onCustomViewHidden();return;}fullscreen=view;fullscreenCallback=callback;frame.addView(view,new FrameLayout.LayoutParams(-1,-1));getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);}
+   public void onHideCustomView(){hideFullscreen();}
+  });
+  root.addView(web,new LinearLayout.LayoutParams(-1,0,1));frame.addView(root);setContentView(frame);
+  if(state==null||web.restoreState(state)==null)web.loadUrl(YouTubeNavigation.startUrl(getIntent().getStringExtra("id"),getIntent().getBooleanExtra("music",false)));
  }
- String read(String url)throws Exception{URLConnection c=new URL(url).openConnection();c.setConnectTimeout(10000);c.setReadTimeout(10000);try(InputStream in=c.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){if(out.size()>1024*1024)throw new IOException("Response too large");out.write(b,0,n);}return out.toString("UTF-8");}}
- void open(boolean music){if(!YouTubeLauncher.open(this,id,music))new AlertDialog.Builder(this).setTitle("No playback app available").setMessage("Install YouTube, YouTube Music or a browser, then try again.").setPositiveButton("OK",null).show();}
+ boolean blockNavigation(String url){if(YouTubeNavigation.allowed(url))return false;status.setText("This link requires another app or unsupported site. Use the website player inside Pulse.");return true;}
+ void hideFullscreen(){if(fullscreen!=null){frame.removeView(fullscreen);fullscreen=null;getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);if(fullscreenCallback!=null){fullscreenCallback.onCustomViewHidden();fullscreenCallback=null;}}}
+ public void onBackPressed(){if(fullscreen!=null)hideFullscreen();else if(!rendererGone&&web.canGoBack())web.goBack();else super.onBackPressed();}
+ protected void onSaveInstanceState(Bundle state){if(!rendererGone)web.saveState(state);super.onSaveInstanceState(state);}
+ protected void onPause(){super.onPause();if(rendererGone)return;web.evaluateJavascript("document.querySelectorAll('video,audio').forEach(function(v){v.pause();});",null);web.onPause();}
+ protected void onResume(){super.onResume();if(web!=null&&!rendererGone)web.onResume();}
+ protected void onDestroy(){hideFullscreen();if(web!=null&&!rendererGone){web.stopLoading();web.destroy();}super.onDestroy();}
 }
