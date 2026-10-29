@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.7 fixes combination colors in normal mode, cleans the matrix clock and drives both native-player spectra from decoded audio. Dot-matrix mode and in-app YouTube browsing remain available.
+Pure-black Android 8+ audio and video player. Version 1.8 adds previous/next tracks, automatic queue advancement and matching media-session controls. It retains the shared combo colors, clean matrix clock and measured native audio spectrum. Dot-matrix mode and in-app YouTube browsing remain available.
 
 ## Download
 
-[Download Pulse Media Player v1.7 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.7.apk)
+[Download Pulse Media Player v1.8 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.8.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -16,7 +16,7 @@ This is a debug-signed preview build. Compilation, Android lint, JVM regression 
 - Direct/local sources start in **audio-only** mode. Tap their artwork or use **Menu → Watch current video**, then choose **Audio only** to return. Leaving the video screen, including locking the phone, detaches video and keeps service audio playing.
 - **Download** saves permitted direct files (maximum 250 MB) into the offline library. Adaptive playlists, DRM sources and YouTube downloads are not supported. App-private downloads are deleted on uninstall.
 - **Menu** controls white/red/yellow/blue/purple/combination themes, normal/dot-matrix rendering, filled/outline buttons and opt-in lock-screen mode. Dot mode uses an explicit 5×7 font and coverage sampling for complete outlines. Embedded artwork or a local video frame replaces the default moon when available, and is rendered entirely as dots in matrix mode.
-- Playback includes ±10 seconds, seeking, device volume, audio focus, headphone-disconnect pause, media notification and system lock-screen controls.
+- Playback includes previous/next tracks, ±10 seconds, seeking, device volume, audio focus, headphone-disconnect pause, media notification and system lock-screen controls. Select a track from the library to create a queue in its visible title order, including the current search/category filter. Previous/next use this stable snapshot; reaching the first/last track disables that direction. Finished tracks advance automatically; the last track stops without repeating. A separately opened direct URL has a one-item queue. Notification and media-session skip controls appear when that direction is available; Android controls their lock-screen presentation.
 - Optional player over the lock screen works while the activity is open, where Android allows it. It neither replaces secure authentication nor forces itself open from the background.
 
 ## YouTube
@@ -64,3 +64,11 @@ Normal and matrix players share explicit theme roles: red/blue for the outline a
 The waveform is now a 64-band logarithmic frequency spectrum computed from decoded playback PCM with a 1024-point Hann-windowed FFT. Channel power combines without stereo phase cancellation. Analysis runs on a worker at most 25 times per second; the PCM buffer is observed without consuming it. Pausing, silence and stale samples flatten the display. No microphone permission or system-audio recording is used. This applies to local files and direct streams decoded by Pulse's Media3 player, including their audio-only video mode. YouTube's WebView renderer and compressed offload/passthrough do not feed this analyzer. This is not a waveform recording or a calibrated scientific instrument.
 
 Validation: 32 JVM/Robolectric tests pass, covering clock strings, distinct combo roles, filled/outline buttons, frequency peaks, silence/DC, stereo phase and real PCM decoding without changing the playback buffer position. Build and lint complete; lint retains existing warnings. Physical-device playback remains unverified. [Red/yellow/white preview](docs/screenshots/combo-red-yellow-white-v1.7.png) · [Blue/purple/white preview](docs/screenshots/combo-blue-purple-white-v1.7.png). These are simulated idle UI renders, with a flat spectrum.
+
+## v1.8 track navigation and filtering roadmap
+
+Normal mode has separate Previous/Next controls; matrix mode has dotted previous/next icons beside the existing ±10-second controls. Queue navigation also works through the native media session and notification, and finished tracks advance to the next item. This queue covers imported/downloaded library media. YouTube uses its website playlist controls; this release does not extract a native YouTube queue or change the browser filter.
+
+[Ad blocking next steps](docs/AD_BLOCKING_NEXT_STEPS.md) explains the work required: live failure reproduction, a maintained engine, trusted list/script updates, page lifecycle integration and real-device regression testing. It sets measurable goals without promising permanent removal of every ad.
+
+For v1.8, 38 JVM/Robolectric tests pass, including queue boundaries, filtered selection snapshots, separate track/seek actions, automatic advancement, notification PendingIntents and both player layouts. Build and lint complete with the existing lint warnings. [Normal controls preview](docs/screenshots/track-controls-normal-v1.8.png) · [Matrix controls preview](docs/screenshots/track-controls-dots-v1.8.png). These screenshots use a simulated selected track, not physical-device playback.
