@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.3 keeps YouTube browsing and playback inside Pulse through Android System WebView. The installed YouTube / YouTube Music apps are not required.
+Pure-black Android 8+ audio and video player. Version 1.4 adds an inset-aware toolbar, standard web media notifications, experimental background web audio and conservative ad/tracker filtering. YouTube browsing and playback stay inside Pulse through Android System WebView. The installed YouTube / YouTube Music apps are not required.
 
 ## Download
 
-[Download Pulse Media Player v1.3 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.3.apk)
+[Download Pulse Media Player v1.4 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.4.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -23,7 +23,13 @@ This is a debug-signed preview build. Compilation, Android lint, JVM regression 
 
 **Online → Browse YouTube / Browse YouTube Music** opens the live website inside Pulse. Paste a video link to open its web watch page inside the same Activity. Search, thumbnails and playback use the website's controls. Links to installed apps and external sites are blocked; Pulse launches no external player/browser. Back, reload and website fullscreen video are supported. Update Android System WebView if a site fails to load. Website availability, login restrictions and playback compatibility vary by device; no live device playback is verified by unit tests.
 
-This is an in-app browser, not a separate YouTube backend or native catalog player. YouTube pages retain their own UI and ads; they are not converted into Pulse's dot-matrix player. This build pauses web audio/video when leaving the screen or locking. It does not provide YouTube audio-only, background playback, offline downloads or Premium entitlements. Pulse's own themed native audio/video player and background controls still apply to local files and direct media streams.
+This is an in-app browser, not a separate YouTube backend or native catalog player. YouTube pages retain their own UI; they are not converted into Pulse's dot-matrix player. The web player is retained by a foreground service with standard media-session controls (play/pause, seek, ±10 seconds, stop). **Options → Background audio (experimental)** is enabled by default and avoids Pulse forcing a pause on screen lock or when leaving the browser. The WebView/website or Android can still suspend playback; physical-device screen-off continuity is not verified. Disabling this option restores pause-on-leave. Stop web audio from Options or its notification to release the retained browser. This does not extract a separate YouTube audio stream, provide offline YouTube downloads, or unlock Premium entitlements. Pulse's own themed native audio/video player and background controls still apply to local files and direct media streams.
+
+## Browser controls and filtering
+
+The compact toolbar has 48dp icon buttons and applies system-bar/cutout insets, including Android 15 edge-to-edge behavior. Informational banners remain hidden during normal browsing; errors appear when needed. Options also provides **Ad and tracker filtering**, enabled by default. It blocks a short list of known ad hosts and selected ad-stat paths and hides a small set of page ad containers. It is not Brave's adblock engine and cannot reliably identify same-origin video ads or guarantee an ad-free site. Disable filtering and reload if a page breaks.
+
+Reference consulted: [Brave's adblock-rust description](https://github.com/brave/adblock-rust), which documents network/cosmetic filtering and resource replacement. No Brave code or uploaded YouTube Music implementation was copied into Pulse.
 
 ## Build and test
 
@@ -34,6 +40,8 @@ Open in Android Studio with JDK 17/21 and Android SDK 35, or run:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube / Music link validation, navigation-policy and simulated in-app routing and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. These do not establish hardware decoding or live YouTube availability.
+Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube / Music link validation, navigation-policy and simulated in-app routing and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. Tests also cover Android 15 phone-density system/cutout insets, 48dp targets, retained browser ownership, notification transport actions, background-disable behavior and filtering that preserves media/login endpoints. These do not establish hardware decoding, actual audio continuity, blocked live ads or live YouTube availability.
 
 On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, in-app navigation, playback and fullscreen with no app handoff; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.
+
+On a real phone, additionally test the notification and ±10-second controls while locked, background audio with the setting enabled/disabled, headset disconnection, switching back to native playback, and filter-enabled playback across several YouTube videos. Verify the toolbar remains touchable around the phone’s status icons and camera cutout.

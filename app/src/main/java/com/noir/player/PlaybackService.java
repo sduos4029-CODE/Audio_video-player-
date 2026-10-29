@@ -22,6 +22,7 @@ public class PlaybackService extends Service {
  }
  public int onStartCommand(Intent i,int flags,int id){startForeground(1,notification());if(i!=null){String a=i.getAction();if("load".equals(a))load(Uri.parse(i.getStringExtra("uri")),i.getStringExtra("title"));else if("toggle".equals(a))toggle();else if("back".equals(a))skip(-10000);else if("forward".equals(a))skip(10000);}return START_NOT_STICKY;}
  void load(Uri uri,String name){
+  if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);
   final int request=++generation; source=uri.toString();
   if(player!=null)player.release(); artwork=null; title=name; error="";loading=true;
   player=new androidx.media3.exoplayer.ExoPlayer.Builder(this).build();
@@ -41,12 +42,13 @@ public class PlaybackService extends Service {
   final Bitmap image=result;new Handler(getMainLooper()).post(()->{if(request==generation){artwork=image;update();}});
   }).start();
  }
+ public void suspendForWeb(){pause();session.setActive(false);stopForeground(STOP_FOREGROUND_REMOVE);}
  public void setAudioOnly(boolean value){audioOnly=value;if(player!=null){player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,value).build());if(value)player.clearVideoSurface();}update();}
  public void setSurface(android.view.Surface surface){if(player!=null)player.setVideoSurface(surface);}
  public boolean playing(){try{return player!=null&&player.isPlaying();}catch(Exception e){return false;}}
  public int duration(){try{return player==null?0:(int)Math.max(0,player.getDuration());}catch(Exception e){return 0;}}
  public int position(){try{return player==null?0:(int)player.getCurrentPosition();}catch(Exception e){return 0;}}
- public void play(){if(player==null)return;if(audio.requestAudioFocus(focus)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED){try{player.play();}catch(Exception ignored){}update();}}
+ public void play(){if(player==null)return;if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);startForeground(1,notification());if(audio.requestAudioFocus(focus)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED){try{player.play();}catch(Exception ignored){}update();}}
  public void pause(){if(player!=null)try{player.pause();}catch(Exception ignored){}update();}
  public void toggle(){if(player!=null&&player.getPlayWhenReady())pause();else play();}
  public void seek(int p){if(player!=null&&!loading){try{player.seekTo(Math.max(0,Math.min(duration(),p)));}catch(Exception ignored){}update();}}
