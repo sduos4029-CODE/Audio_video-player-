@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.1 adds readable LED lettering, video and YouTube link handling.
+Pure-black Android 8+ audio and video player. Version 1.2 replaces the unreliable YouTube embed with official YouTube / YouTube Music app handoff and a browser fallback.
 
 ## Download
 
-[Download Pulse Media Player v1.1 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.1.apk)
+[Download Pulse Media Player v1.2 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.2.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -21,7 +21,7 @@ This is a debug-signed preview build. Compilation, Android lint, JVM regression 
 
 ## YouTube
 
-YouTube links open the official embedded player. The app requests the real video title and thumbnail from YouTube oEmbed; the preview thumbnail follows normal/dot-matrix mode. The official video player itself stays intact. Some videos disallow embedding or require sign-in; **Open in YouTube** is the fallback. YouTube playback pauses when leaving this screen. Audio-only, screen-off playback and downloading are not supported for YouTube; those functions apply to direct/local sources. No paid catalog, account backend, audio extraction or DRM bypass is included.
+YouTube and YouTube Music links open a native preview with the real title/thumbnail when metadata is available. Choose **Play in YouTube Music** or **Play in YouTube**. Pulse tries the selected official app, then the other app, then a browser. Missing apps are handled without crashing. Pulse pauses its current track only after a successful handoff. Playback takes place outside Pulse; ads, account entitlements, downloads and background playback follow the selected service's own rules. Pulse does not unlock Premium. Its own audio-only, offline and lock-screen player features apply to local files and direct media streams.
 
 ## Build and test
 
@@ -32,6 +32,6 @@ Open in Android Studio with JDK 17/21 and Android SDK 35, or run:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube link validation and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. These do not establish hardware decoding or live YouTube availability.
+Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube / Music link validation, simulated official-app/browser fallback handling and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. These do not establish hardware decoding or live YouTube availability.
 
-On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, embedded playback and fallback; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.
+On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, official app handoff and browser fallback; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.

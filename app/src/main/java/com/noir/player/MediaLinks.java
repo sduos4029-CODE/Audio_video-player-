@@ -14,7 +14,7 @@ public final class MediaLinks {
    String host=uri.getHost(); if(host==null)return null;
    host=host.toLowerCase(java.util.Locale.ROOT);String id=null;
    if(host.equals("youtu.be")) id=uri.getPath().substring(1).split("/")[0];
-   else if(host.equals("youtube.com")||host.equals("www.youtube.com")||host.equals("m.youtube.com")){
+   else if(host.equals("youtube.com")||host.equals("www.youtube.com")||host.equals("m.youtube.com")||host.equals("music.youtube.com")){
     String path=uri.getPath();
     if(path.startsWith("/shorts/")||path.startsWith("/embed/")||path.startsWith("/live/"))id=path.split("/")[2];
     else if(path.equals("/watch")&&uri.getRawQuery()!=null)for(String pair:uri.getRawQuery().split("&")){String[] kv=pair.split("=",2);if(kv.length==2&&kv[0].equals("v"))id=URLDecoder.decode(kv[1],StandardCharsets.UTF_8.name());}
