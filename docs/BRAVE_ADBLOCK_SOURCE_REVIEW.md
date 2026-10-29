@@ -1,5 +1,7 @@
 # Brave filtering source review for Pulse v1.7
 
+Historical scope: this document describes the earlier release named below. [v1.10 now integrates adblock-rust and pinned upstream page rules](ADBLOCK_V1_10.md); remaining limits are documented there.
+
 This is a targeted static review of Brave's public filtering and Android YouTube integration, not a complete browser audit or a live ad-blocking test. Reviewed source: `brave/brave-core` revision `8ffa8d7f121c7b5be5ed81eefa7fd8e45de6aa85`. The source was read separately; no Brave implementation was copied into Pulse. Source behavior at this revision is not a guarantee for every shipped Brave version or every YouTube response.
 
 ## What the source establishes

@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.9 applies the chosen waveform styles: a smooth line in normal mode and a dot wave in matrix mode, both driven by decoded native playback audio. Previous/next tracks, shared combo colors and the clean matrix clock remain available. Dot-matrix mode and in-app YouTube browsing remain available.
+Pure-black Android 8+ audio and video player. Version 1.10 integrates the actual adblock-rust 0.13.5 network engine and a pinned uBlock Origin/EasyList rule and scriptlet snapshot for in-app YouTube browsing. Smooth-line normal mode, dot-wave matrix mode, previous/next tracks and offline playback remain available.
 
 ## Download
 
-[Download Pulse Media Player v1.9 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.9.apk)
+[Download Pulse Media Player v1.10 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.10.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -29,11 +29,11 @@ This is an in-app browser, not a separate YouTube backend or native catalog play
 
 YouTube fills the available safe page area by default, without a Pulse header. A small floating **⋮** button gives access to reload, return to the native player, stop audio, background audio, filtering and **Show Pulse toolbar**. The optional toolbar retains 48dp targets and system-bar/cutout insets. Website video fullscreen hides Android's system bars until a swipe or exit; ordinary page browsing keeps status/navigation areas safe.
 
-**Ad and tracker filtering** is enabled by default. Version 1.5 adds document-start JavaScript where the installed WebView supports it (page-start/page-finish fallback otherwise), targeted ad-metadata removal from player bootstrap/fetch/XHR responses, persistent cosmetic filtering across page changes, available skip-button clicking, and known-host/path filtering for ordinary and service-worker requests. It preserves request bodies/credentials, playback data, non-player APIs and unavailable-video status in regression fixtures. Turning filtering off removes document-start injection and reloads the page.
+**Ad and tracker filtering** is enabled by default. Version 1.10 uses the pinned **adblock-rust 0.13.5** engine for intercepted subresource/service-worker requests, including matching exceptions and bounded local resource replacements. Bundled EasyList and selected uBlock Origin lists resolve domain-specific cosmetic rules and scriptlets for mobile, desktop and Music pages. The existing Pulse response cleanup/skip control remains as an additional layer. Document-start injection requires WebView support; older WebViews use a later fallback. Turning filtering off reloads the page without the scripts.
 
-This is not Brave's adblock engine. Synthetic tests do not establish live YouTube ad suppression, and same-stream ads, unsupported WebViews, site changes or anti-filtering responses can still prevent an ad-free experience. Update Android System WebView. Disable filtering and reload if playback breaks. No claim of all ads blocked, Premium access or live phone playback verification is made.
+The native engine is used by Brave, but Pulse still uses Android System WebView rather than Brave's complete Chromium integration. Some request context is inferred. The rules/scripts are pinned inside the APK and do not self-update; refreshing the snapshot requires a new build. Live ads, account behavior and physical-phone playback have not been verified. No 100% ad-free or Premium claim is made. Disable filtering and reload if playback breaks.
 
-[Brave source review](docs/BRAVE_ADBLOCK_SOURCE_REVIEW.md) traces request matching, filter updates, renderer scripts and Android YouTube background handling at a pinned public source revision. This targeted review does not establish complete browser coverage or verified live ad suppression. No Brave code or uploaded YouTube Music implementation was copied into Pulse.
+Use **⋮ → Filter diagnostics** to see whether the native engine loaded, early-injection support and local counters. **Open-source licenses** exposes the component notices and full license texts. [Implementation and validation boundaries](docs/ADBLOCK_V1_10.md) · [Source archives and reproducible native build](third_party/README.md). No uploaded Google APK implementation is included.
 
 ## Build and test
 
@@ -80,3 +80,7 @@ Normal mode uses one continuous curved line through a short 64-point trace of de
 The previews use a known 440 Hz test signal through the production rendering helpers: [Smooth line](docs/screenshots/waveform-smooth-v1.9.png) · [Dot wave](docs/screenshots/waveform-dots-v1.9.png). These are test renders, not screenshots of physical-device playback.
 
 Validation for v1.9: 40 JVM/Robolectric tests pass, including PCM trace polarity, anti-phase stereo, paused output, the curved line and spaced dot rendering. Build and lint complete with the existing warnings. Live-device playback remains unverified.
+
+## v1.10 filtering validation
+
+The release includes native engine tests, an actual JNI/JVM smoke check with the bundled rules, browser fixtures for all three YouTube interfaces, and the Android regression suite. Browser fixtures fulfill every request locally; they do not measure live YouTube ad suppression. Android processor libraries are provided for arm64-v8a, armeabi-v7a and x86_64, with 16 KB ELF segment alignment. The 122,872-line rule source includes comments/directives and is not a parsed active-rule count. There are 201 bundled scriptlet/helper/replacement resources. See the linked implementation report for limitations.

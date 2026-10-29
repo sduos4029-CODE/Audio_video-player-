@@ -1,0 +1,27 @@
+{
+  "engine": "adblock-rust 0.13.5",
+  "uBlock": "aaefbdb76ed367da08d8aec193d6e8fa1b84485d",
+  "uAssets": "332cd21cf59b8dc7d5c9331eeeb9899a856ee225",
+  "sources": [
+    "thirdparties/easylist/easylist.txt",
+    "filters/filters.txt",
+    "filters/filters-2020.txt",
+    "filters/filters-2021.txt",
+    "filters/filters-2022.txt",
+    "filters/filters-2023.txt",
+    "filters/filters-2024.txt",
+    "filters/filters-2025.txt",
+    "filters/filters-2026.txt",
+    "filters/filters-general.txt",
+    "filters/filters-mobile.txt",
+    "filters/quick-fixes.txt",
+    "filters/unbreak.txt"
+  ],
+  "resourceCount": 201,
+  "files": {
+    "rules.txt": "0e93a583265f712a496a2ca8e6fcb5b5b8657ce135d90ae2c276d0921e4fdc37",
+    "resources.json": "391c4d10f32cfc0332053d9e5fc3d2fdd4c54ab2c965243609cfb30a2ecb0537",
+    "pages.json": "e8273fe8ccc88a757fecdc1c62479af5c0f7d8b01d559b5db53c228a4cfe11bf",
+    "web_rules.js": "2c8ebe8db25b3787bfa847404b834e70d799e3ee62930af9e2c159470ccca090"
+  }
+}

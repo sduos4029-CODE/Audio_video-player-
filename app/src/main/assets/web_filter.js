@@ -76,7 +76,7 @@
     if (!document.getElementById('pulse-filter')) { var style = document.createElement('style'); style.id = 'pulse-filter'; style.textContent = css; document.documentElement.appendChild(style); }
     // Click only an available skip control. Never seek the video to its end.
     document.querySelectorAll('.ytp-ad-skip-button,.ytp-ad-skip-button-modern,.ytp-skip-ad-button').forEach(function (button) {
-      if (!button.disabled && button.getClientRects().length) button.click(); stats.skipClicks++;
+      if (!button.disabled && button.getClientRects().length) { button.click(); stats.skipClicks++; }
     });
   }
   var pending = false;

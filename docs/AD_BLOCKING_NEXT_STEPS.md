@@ -1,5 +1,7 @@
 # Steps toward stronger YouTube filtering
 
+Historical scope: this document describes the earlier release named below. [v1.10 now integrates adblock-rust and pinned upstream page rules](ADBLOCK_V1_10.md); remaining limits are documented there.
+
 Pulse v1.8 adds native-library track navigation. Its YouTube filter is unchanged and remains experimental. The [pinned Brave source review](BRAVE_ADBLOCK_SOURCE_REVIEW.md) explains the architectural gap. This document is an implementation roadmap, not a claim that the work below has been completed.
 
 ## Scope and achievable outcome

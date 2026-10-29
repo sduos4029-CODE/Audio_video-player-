@@ -1,0 +1,18 @@
+Pulse third-party filtering components
+
+adblock-rust 0.13.5, Brave Software and contributors, MPL-2.0.
+https://crates.io/crates/adblock/0.13.5
+
+uBlock Origin scriptlets and replacement resources, Raymond Hill and contributors, GPL-3.0-or-later.
+Source revision: aaefbdb76ed367da08d8aec193d6e8fa1b84485d
+https://github.com/gorhill/uBlock
+
+uBlock Origin uAssets filters, contributors, GPL-3.0. Bundled EasyList is available under GPL-3.0 or CC-BY-SA-3.0; this distribution uses GPL-3.0.
+Filter source revision: 332cd21cf59b8dc7d5c9331eeeb9899a856ee225
+https://github.com/uBlockOrigin/uAssets
+https://easylist.to/pages/licence.html
+
+Full GPL/MPL texts and native dependency license notices are included alongside this notice in the APK adblock assets. Corresponding upstream source archives, revisions, Cargo.lock, generated resources and build instructions are published with Pulse source.
+https://github.com/sduos4029-CODE/Audio_video-player-/tree/main/third_party
+
+These components are provided under their respective licenses without warranty. Pulse is an independent project; it is not Brave or YouTube. No Google APK code has been incorporated.
