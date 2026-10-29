@@ -46,8 +46,8 @@ public class VideoApprovedDesignTest {
   var sc=Robolectric.buildService(VideoRotationTest.RecordingPlayback.class).create();var s=sc.get();s.load(Uri.parse("https://example.org/video.mp4"),"Fixture");s.hasVideo=true;
   try(var ac=Robolectric.buildActivity(VideoActivity.class).setup()){
    var out=s.outputs.get(0);assertEquals(1,out.effects.size());assertSame(s.sketchEffect,out.effects.get(0));VideoPane p=ac.get().pane;
-   p.sketch.performClick();assertTrue(s.sketchEnabled());assertTrue(p.sketch.isSelected());assertTrue(ac.get().getSharedPreferences("noir",0).getBoolean("video_sketch",false));
-   p.sketch.performClick();assertFalse(s.sketchEnabled());assertEquals(1,out.effectCalls);assertEquals(1,out.prepares);assertEquals(62000,s.position());assertEquals(0,out.pauses);
+   p.sketch.performLongClick();assertTrue(s.sketchEnabled());assertTrue(p.sketch.isSelected());assertTrue(ac.get().getSharedPreferences("noir",0).getBoolean("video_sketch",false));
+   p.sketch.performLongClick();assertFalse(s.sketchEnabled());assertEquals(1,out.effectCalls);assertEquals(1,out.prepares);assertEquals(62000,s.position());assertEquals(0,out.pauses);
   }finally{sc.destroy();}
  }
  @Test public void pausedSketchRequestsOneFrameWithoutResuming(){

@@ -94,31 +94,47 @@ gl('glUniform2f', None, I, F, F)(location(program, b'uPixel'), 1 / width, 1 / he
 gl('glUniform3f', None, I, F, F, F)(location(program, b'uLuma'), .2126, .7152, .0722)
 gl('glViewport', None, I, I, I, I)(0, 0, width, height)
 
-def draw(enabled):
+def draw(enabled, style=1):
     gl('glUniform1f', None, I, F)(location(program, b'uEnabled'), enabled)
+    gl('glUniform1f', None, I, F)(location(program, b'uStyle'), style)
     gl('glDrawArrays', None, U, I, I)(5, 0, 4)
     out = (C.c_ubyte * len(pixels))()
     gl('glReadPixels', None, I, I, I, I, U, U, P)(0, 0, width, height, 0x1908, 0x1401, out)
     assert gl('glGetError', U)() == 0, 'GL rendering error'
     return bytes(out)
 
-normal, sketch = draw(0), draw(1)
+normal = draw(0)
 max_error = max(abs(a - b) for a, b in zip(normal, pixels))
 assert max_error <= 1, f'Normal video changed: maximum error {max_error}'
-changed = sum(normal[i:i+3] != sketch[i:i+3] for i in range(0, len(sketch), 4))
-assert changed > width * height * .9, 'Sketch did not transform the whole picture'
-assert len(set(sketch[::4])) > 30, 'Sketch lost image detail'
-assert sketch == draw(1), 'Sketch texture flickers without a source change'
-assert normal == draw(0), 'Turning sketch off did not restore the original'
+styles = ['fine-pencil', 'charcoal', 'ink-hatch', 'color-pencil', 'white-outline', 'comic']
+results = {}
+frames = {}
+import hashlib
+for style, name in enumerate(styles, 1):
+    sketch = draw(1, style)
+    changed = sum(normal[i:i+3] != sketch[i:i+3] for i in range(0, len(sketch), 4))
+    assert changed > width * height * .9, f'{name} did not transform the picture'
+    assert sketch == draw(1, style), f'{name} flickers without a source change'
+    assert normal == draw(0, style), f'{name} changes normal video when off'
+    results[name] = {'changed_pixels': changed, 'sha256': hashlib.sha256(sketch).hexdigest()}
+    frames[name] = sketch
+assert len({r['sha256'] for r in results.values()}) == 6, 'Styles render identically'
+assert len(set(frames['fine-pencil'][::4])) > 30, 'Fine pencil lost image detail'
+outline = frames['white-outline']
+assert sum(outline[i] < 10 for i in range(0, len(outline), 4)) > width * height * .6, 'Outline background is not black'
+for name in ['charcoal', 'ink-hatch', 'white-outline']:
+    assert all(max(frames[name][i:i+3]) - min(frames[name][i:i+3]) <= 1 for i in range(0, len(normal), 4)), f'{name} should be monochrome'
+for name in ['color-pencil', 'comic']:
+    assert sum(max(frames[name][i:i+3]) - min(frames[name][i:i+3]) > 20 for i in range(0, len(normal), 4)) > width * height * .2, f'{name} lost source color'
 try:
     from PIL import Image
     output = ROOT / 'app/build/shader-smoke'
     output.mkdir(parents=True, exist_ok=True)
-    for name, data in [('normal', normal), ('sketch', sketch)]:
+    for name, data in {'normal': normal, **frames}.items():
         Image.frombytes('RGBA', (width, height), data).transpose(Image.Transpose.FLIP_TOP_BOTTOM).save(output / f'{name}.png')
 except ImportError:
     pass
-print(json.dumps({'renderer': renderer, 'normal_max_channel_error': max_error, 'sketch_changed_pixels': changed, 'pixels': width * height, 'deterministic': True}))
+print(json.dumps({'renderer': renderer, 'normal_max_channel_error': max_error, 'styles': results, 'pixels': width * height, 'deterministic': True}))
 egl('eglMakeCurrent', U, P, P, P, P)(display, None, None, None)
 egl('eglDestroyContext', U, P, P)(display, context)
 egl('eglDestroySurface', U, P, P)(display, surface)

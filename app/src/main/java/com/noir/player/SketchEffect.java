@@ -11,6 +11,7 @@ import java.io.IOException;
 @android.annotation.SuppressLint("UnsafeOptInUsageError")
 final class SketchEffect implements GlEffect {
  volatile boolean enabled;
+ volatile int style=SketchStyle.FINE_PENCIL;
  SketchEffect(boolean enabled){this.enabled=enabled;}
  @Override public GlShaderProgram toGlShaderProgram(Context context,boolean useHdr)throws VideoFrameProcessingException{return new Program(context,useHdr,this);}
  static final class Program extends BaseGlShaderProgram {
@@ -25,7 +26,7 @@ final class SketchEffect implements GlEffect {
   }
   @Override public Size configure(int width,int height){program.setFloatsUniform("uPixel",new float[]{1f/width,1f/height});return new Size(width,height);}
   @Override public void drawFrame(int texture,long timeUs)throws VideoFrameProcessingException{
-   try{program.use();program.setSamplerTexIdUniform("uTexSampler",texture,0);program.setFloatUniform("uEnabled",effect.enabled?1:0);program.bindAttributesAndUniforms();GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);GlUtil.checkGlError();}
+   try{program.use();program.setSamplerTexIdUniform("uTexSampler",texture,0);program.setFloatUniform("uEnabled",effect.enabled?1:0);program.setFloatUniform("uStyle",effect.style);program.bindAttributesAndUniforms();GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);GlUtil.checkGlError();}
    catch(GlUtil.GlException e){throw new VideoFrameProcessingException(e,timeUs);}
   }
   @Override public void release()throws VideoFrameProcessingException{try{super.release();}finally{try{program.delete();}catch(GlUtil.GlException e){throw new VideoFrameProcessingException(e);}}}

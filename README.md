@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.15 implements one-tap Fit/Crop/Stretch cycling, touch lock, a symmetric control bar, GPU pencil-sketch video and retained foreground video decoding for quicker Audio/Video switching. The v1.10 native filtering engine and bundled YouTube page rules remain included.
+Pure-black Android 8+ audio and video player. Version 1.16 adds all six sketch styles with a selector and fixes double fitting of GPU-rendered video, which could squeeze a widescreen picture into a thin strip. The v1.10 native filtering engine and bundled YouTube page rules remain included.
 
 ## Download
 
-[Download Pulse Media Player v1.15 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.15.apk)
+[Download Pulse Media Player v1.16 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.16.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -151,3 +151,16 @@ Validation: **68 JVM/Robolectric tests pass**, covering cycling/icons, lock gest
 `python3 tools/test-sketch-gpu.py` compiles and renders the exact bundled vertex/fragment shaders in a surfaceless GLES context. On llvmpipe it verified exact pass-through when off, all 32,768 test pixels transformed when on, deterministic output for unchanged input, and restoration when toggled off. It is a software-GL shader check, not Android codec integration, frame-rate, battery or phone HDR validation. Physical-device testing remains necessary, particularly at high resolution and during mode changes.
 
 Previews: [Landscape controls](docs/screenshots/video-controls-v1.15.png) · [Touch lock](docs/screenshots/video-locked-v1.15.png) · [Portrait controls](docs/screenshots/video-portrait-v1.15.png). These are simulated app renders with a sample poster, not live phone playback. [Shader test input](docs/screenshots/shader-normal-v1.15.png) · [Actual shader test output](docs/screenshots/shader-sketch-v1.15.png) use a synthetic pattern, not a movie frame. Media3’s [Apache license and notice](app/src/main/assets/PLAYER-THIRD-PARTY.txt) are included in the APK. These changes apply to Pulse’s native local/direct-stream player; embedded YouTube retains its own controls and rendering.
+
+
+## v1.16 six styles and corrected Fit sizing
+
+Tap the pencil icon to choose **Normal video, Fine Pencil, Charcoal, Ink Hatch, Color Pencil, White Outline or Comic**. The selection applies to the complete decoded video picture and is remembered. Hold the pencil to turn the effect off/on using the previous style. Styles share the existing GPU pipeline and do not recreate the player or seek during active playback; a paused change requests a frame at the same position. The generated comparison board is art direction, not an exact representation of these real-time shader outputs.
+
+Fit previously applied a TextureView shrink after Media3’s GPU output had already fitted/letterboxed the frame. That second fit compressed a portrait screen’s video into a narrow band. The transform now maps the actual picture region inside the GPU output to the desired Fit/Crop/Stretch region. Fit uses the GPU’s existing fit once; Crop uniformly enlarges it; Stretch fills the viewport by changing its proportions. The normal-renderer fallback still maps an unfitted decoder picture. Source dimensions, pixel shape and rotation come from the active format when available rather than relying only on video-size callbacks. Poster artwork retains its separate image geometry.
+
+Fit preserves the entire source, so a wide movie in portrait will still have black space. Crop trims edges to fill the screen, and Stretch changes proportions. Pinch zoom, one-tap size cycling, rotation and touch lock remain available. The same sizing correction applies while sketch is off because the GPU pipeline is still used for normal pass-through. The underlying Media3 stage explicitly uses [`Presentation.LAYOUT_SCALE_TO_FIT`](https://github.com/androidx/media/blob/1.5.1/libraries/effect/src/main/java/androidx/media3/effect/FinalShaderProgramWrapper.java#L580) when drawing to the output surface.
+
+All 76 JVM/Robolectric tests pass. Build and lint complete with the six existing warnings. Validation covers already-fitted 16:9, cinematic, 4:3 and portrait pictures in both screen orientations, source pixel ratio/rotation, the fallback renderer, and a pixel-level circle/height regression using a simulated letterboxed output buffer. Picker tests select all six modes, preserve position/play intent, remember the selected style, restore it after a service restart and keep touch lock effective. Shader tests compile and draw all six modes, verify six distinct outputs, exact normal pass-through, stable repeated frames, monochrome ink/charcoal/outline, color retention in pencil/comic, and black background coverage in outline mode. These checks use simulated Android state and software GLES, not a physical phone’s decoder/compositor or high-resolution performance.
+
+[Style selector preview](docs/screenshots/sketch-picker-v1.16.png) uses an Android-simulated dialog. Exact shader outputs from a synthetic test pattern: [Fine Pencil](docs/screenshots/shader-fine-pencil-v1.16.png) · [Charcoal](docs/screenshots/shader-charcoal-v1.16.png) · [Ink Hatch](docs/screenshots/shader-ink-hatch-v1.16.png) · [Color Pencil](docs/screenshots/shader-color-pencil-v1.16.png) · [White Outline](docs/screenshots/shader-white-outline-v1.16.png) · [Comic](docs/screenshots/shader-comic-v1.16.png).

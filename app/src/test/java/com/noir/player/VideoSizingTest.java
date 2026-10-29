@@ -87,7 +87,7 @@ public class VideoSizingTest {
    float savedZoom=pane.zoom;ac.recreate();assertEquals(savedZoom,ac.get().pane.zoom,.001f);
   }finally{sc.destroy();}
  }
- static RectF picture(VideoPane pane){RectF rect=new RectF(0,0,pane.getWidth(),pane.getHeight());pane.texture.getTransform(new Matrix()).mapRect(rect);return rect;}
+ static RectF picture(VideoPane pane){RectF rect=VideoGeometry.pictureInOutput(pane.getWidth(),pane.getHeight(),pane.aspect,pane.service()!=null&&pane.service().useVideoEffects);pane.texture.getTransform(new Matrix()).mapRect(rect);return rect;}
  static void send(VideoPane pane,long t,int action,float[] x,float[] y){
   MotionEvent.PointerProperties[] properties=new MotionEvent.PointerProperties[x.length];MotionEvent.PointerCoords[] coords=new MotionEvent.PointerCoords[x.length];
   for(int i=0;i<x.length;i++){properties[i]=new MotionEvent.PointerProperties();properties[i].id=i;properties[i].toolType=MotionEvent.TOOL_TYPE_FINGER;coords[i]=new MotionEvent.PointerCoords();coords[i].x=x[i];coords[i].y=y[i];coords[i].pressure=1;coords[i].size=1;}

@@ -20,7 +20,7 @@ public class PlaybackService extends Service {
  public String title="Choose your soundtrack", error=""; public Bitmap artwork; public boolean loading=false;
  public String artist="";public boolean hasVideo;public boolean audioOnly=true;public boolean videoFrameReady;public float videoAspect=16/9f;private Object videoOwner;private java.lang.ref.WeakReference<android.view.TextureView> videoTexture=new java.lang.ref.WeakReference<>(null);private boolean metadataHasVideo; public String source=""; private int generation=0; private boolean resumeOnFocus; private boolean noisyRegistered;
  private final BroadcastReceiver noisy=new BroadcastReceiver(){public void onReceive(Context c,Intent i){pause();}};
- public void onCreate(){super.onCreate();current=this;sketchEffect.enabled=getSharedPreferences("noir",0).getBoolean("video_sketch",false);audio=(AudioManager)getSystemService(AUDIO_SERVICE);
+ public void onCreate(){super.onCreate();current=this;sketchEffect.enabled=getSharedPreferences("noir",0).getBoolean("video_sketch",false);sketchEffect.style=SketchStyle.valid(getSharedPreferences("noir",0).getInt("video_sketch_style",SketchStyle.FINE_PENCIL));audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   focus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()).setOnAudioFocusChangeListener(change->{if(change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK){if(player!=null)player.setVolume(.2f);}else if(change<0){resumeOnFocus=change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT&&playing();pause();}else {if(player!=null)player.setVolume(1);if(resumeOnFocus){resumeOnFocus=false;play();}}}).build();
   session=new MediaSession(this,"Pulse Media Player");session.setCallback(new MediaSession.Callback(){public void onPlay(){play();} public void onPause(){pause();} public void onSeekTo(long p){seek((int)p);} public void onFastForward(){skip(10000);}public void onRewind(){skip(-10000);} public void onSkipToPrevious(){previousTrack();}public void onSkipToNext(){nextTrack();} public void onStop(){stopSelf();}});session.setActive(true);
   ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(new NotificationChannel("playback","Music playback",NotificationManager.IMPORTANCE_LOW));
@@ -84,6 +84,9 @@ public class PlaybackService extends Service {
   if(!same){videoOwner=owner;videoTexture=new java.lang.ref.WeakReference<>(view);videoFrameReady=false;if(player!=null)player.setVideoTextureView(view);}
   setVideoDecodingEnabled(true);if(changed)update();
  }
+ public float currentVideoAspect(){androidx.media3.common.Format format=player==null?null:player.getVideoFormat();if(format!=null&&format.width>0&&format.height>0)return VideoGeometry.sourceAspect(format.width,format.height,format.pixelWidthHeightRatio,format.rotationDegrees);return videoAspect;}
+ public int sketchStyle(){return sketchEffect.style;}
+ public void setSketchStyle(int value){if(!useVideoEffects)return;sketchEffect.style=SketchStyle.valid(value);setSketchEnabled(true);getSharedPreferences("noir",0).edit().putInt("video_sketch_style",sketchEffect.style).apply();}
  public boolean sketchEnabled(){return useVideoEffects&&sketchEffect.enabled;}
  public boolean canSketch(){return useVideoEffects;}
  public void setSketchEnabled(boolean value){if(value&&!useVideoEffects)return;sketchEffect.enabled=value;if(player!=null&&!player.getPlayWhenReady())player.seekTo(player.getCurrentPosition());getSharedPreferences("noir",0).edit().putBoolean("video_sketch",value).apply();}
