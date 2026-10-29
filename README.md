@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.4 adds an inset-aware toolbar, standard web media notifications, experimental background web audio and conservative ad/tracker filtering. YouTube browsing and playback stay inside Pulse through Android System WebView. The installed YouTube / YouTube Music apps are not required.
+Pure-black Android 8+ audio and video player. Version 1.5 gives YouTube the full page area with a small floating Pulse menu, immersive video fullscreen, and stronger browser filtering. YouTube browsing and playback stay inside Pulse through Android System WebView; installed YouTube apps are not required.
 
 ## Download
 
-[Download Pulse Media Player v1.4 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.4.apk)
+[Download Pulse Media Player v1.5 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.5.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -27,7 +27,11 @@ This is an in-app browser, not a separate YouTube backend or native catalog play
 
 ## Browser controls and filtering
 
-The compact toolbar has 48dp icon buttons and applies system-bar/cutout insets, including Android 15 edge-to-edge behavior. Informational banners remain hidden during normal browsing; errors appear when needed. Options also provides **Ad and tracker filtering**, enabled by default. It blocks a short list of known ad hosts and selected ad-stat paths and hides a small set of page ad containers. It is not Brave's adblock engine and cannot reliably identify same-origin video ads or guarantee an ad-free site. Disable filtering and reload if a page breaks.
+YouTube fills the available safe page area by default, without a Pulse header. A small floating **⋮** button gives access to reload, return to the native player, stop audio, background audio, filtering and **Show Pulse toolbar**. The optional toolbar retains 48dp targets and system-bar/cutout insets. Website video fullscreen hides Android's system bars until a swipe or exit; ordinary page browsing keeps status/navigation areas safe.
+
+**Ad and tracker filtering** is enabled by default. Version 1.5 adds document-start JavaScript where the installed WebView supports it (page-start/page-finish fallback otherwise), targeted ad-metadata removal from player bootstrap/fetch/XHR responses, persistent cosmetic filtering across page changes, available skip-button clicking, and known-host/path filtering for ordinary and service-worker requests. It preserves request bodies/credentials, playback data, non-player APIs and unavailable-video status in regression fixtures. Turning filtering off removes document-start injection and reloads the page.
+
+This is not Brave's adblock engine. Synthetic tests do not establish live YouTube ad suppression, and same-stream ads, unsupported WebViews, site changes or anti-filtering responses can still prevent an ad-free experience. Update Android System WebView. Disable filtering and reload if playback breaks. No claim of all ads blocked, Premium access or live phone playback verification is made.
 
 Reference consulted: [Brave's adblock-rust description](https://github.com/brave/adblock-rust), which documents network/cosmetic filtering and resource replacement. No Brave code or uploaded YouTube Music implementation was copied into Pulse.
 
@@ -37,6 +41,7 @@ Open in Android Studio with JDK 17/21 and Android SDK 35, or run:
 
 ```sh
 ./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
+node tools/test-web-filter.cjs
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -45,3 +50,5 @@ Unit tests cover preserving thin strokes between dot samples, edge cells, YouTub
 On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, in-app navigation, playback and fullscreen with no app handoff; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The waveform is decorative rather than a measured spectrum.
 
 On a real phone, additionally test the notification and ±10-second controls while locked, background audio with the setting enabled/disabled, headset disconnection, switching back to native playback, and filter-enabled playback across several YouTube videos. Verify the toolbar remains touchable around the phone’s status icons and camera cutout.
+
+For v1.5, additionally check full-page browsing, floating-menu reachability, optional toolbar, video fullscreen enter/exit, ad behavior before and after navigation, and filter off/on reloads on a real phone. The Node fixture suite executes the exact bundled filter script in isolated test contexts; it does not contact YouTube.
