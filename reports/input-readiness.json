@@ -1,0 +1,254 @@
+{
+  "kind": "analysis ZIP, not an installable or authenticated APK",
+  "package": "com.google.android.apps.youtube.music",
+  "version": "9.43.51",
+  "dex": [
+    {
+      "file": "classes.dex",
+      "sha256": "be8d648d2c8e1c315802e94c55a7e4fa9db920983511fa6b78b1074085fda2b3",
+      "bytes": 8474284
+    },
+    {
+      "file": "classes2.dex",
+      "sha256": "ea620017c7314dc115ee712569c3f649ad366daf8f03fe96d129cd720ac039e5",
+      "bytes": 7865352
+    },
+    {
+      "file": "classes3.dex",
+      "sha256": "3d153980f124f2c446e553d0a9c066f271b31a56674be58da2db8dc9f28f4ef8",
+      "bytes": 7788292
+    },
+    {
+      "file": "classes4.dex",
+      "sha256": "1d4183855e4e1fc0cbdfdd7f1753ab660d87ee617814dc0b1097837b6041de8e",
+      "bytes": 7139040
+    },
+    {
+      "file": "classes5.dex",
+      "sha256": "4dbaf1bacf3d47fc95ac3b1fd9ee91124b9eecf3b488cd1f0411abe38c4af5b9",
+      "bytes": 1996856
+    },
+    {
+      "file": "classes6.dex",
+      "sha256": "85958c7ca498571602d25208d8f70daadd3ce9f1f317c60a9bcb74798e897b3f",
+      "bytes": 561348
+    }
+  ],
+  "entry_count": 2810,
+  "referenced_resource_paths": 2500,
+  "missing_referenced_resource_paths": [],
+  "inferred_renames": [
+    {
+      "supplied": "res/1qs (1).xml",
+      "inferred_original": "res/1qs.xml",
+      "sha256": "7f0dc065f01fd71a9ed51880aff0e4576d091cb68ae3c4bb23e7dc5c07694872"
+    },
+    {
+      "supplied": "res/BsQ (1).xml",
+      "inferred_original": "res/BsQ.xml",
+      "sha256": "44fc9957fe3a3df26a3d0231db0f3c1a82d07fb8b4201356870d34389c9339ad"
+    },
+    {
+      "supplied": "res/ETx (1).xml",
+      "inferred_original": "res/ETx.xml",
+      "sha256": "e6b80e18d96bf6f1bac26148eca8046b0cf70c6d551c76fccc0d81faa7ec0f6a"
+    },
+    {
+      "supplied": "res/IVr (1).xml",
+      "inferred_original": "res/IVr.xml",
+      "sha256": "42409adcfd04d313228e48d36a709af7b937650f2c429755f62690ecc1737e13"
+    },
+    {
+      "supplied": "res/InE (1).xml",
+      "inferred_original": "res/InE.xml",
+      "sha256": "19dd7b472ffe60a054542c5f05e0c3e121f69b648e51ac67de59c1b263e9f223"
+    },
+    {
+      "supplied": "res/K-a (1).xml",
+      "inferred_original": "res/K-a.xml",
+      "sha256": "c3bc30efa505bbfeba1b09aea38845d15426652ed4224d1740963d7546cf87fb"
+    },
+    {
+      "supplied": "res/NGq (1).xml",
+      "inferred_original": "res/NGq.xml",
+      "sha256": "0a03bb811099b883612f8881cc5e22ed157e7aeb500bac2277ab9274103f595d"
+    },
+    {
+      "supplied": "res/Oso (1).xml",
+      "inferred_original": "res/Oso.xml",
+      "sha256": "41ca04e3abf46597412ab66d9307d73bc57cdd8c278a4149770fbb6eb60669a0"
+    },
+    {
+      "supplied": "res/a5X (1).xml",
+      "inferred_original": "res/a5X.xml",
+      "sha256": "ad08ccf24d0550773e918e13fc302d6b47a133776fe7f6ddbb1153159c8d6a2e"
+    },
+    {
+      "supplied": "res/aES (1).xml",
+      "inferred_original": "res/aES.xml",
+      "sha256": "68ea06ad5fe5506d24076bce849977e6772be02c06c72def32c7e1bfc7ce15f7"
+    },
+    {
+      "supplied": "res/aQY (1).xml",
+      "inferred_original": "res/aQY.xml",
+      "sha256": "5c5722fcd016a810ea7ab10be21dd269288e31fe6f64ea1934d2b1d1ebdfcfb6"
+    },
+    {
+      "supplied": "res/blS (1).xml",
+      "inferred_original": "res/blS.xml",
+      "sha256": "83beec47f4883000e1c1ec8fea66636dc72fef6080b092cc7d65262da7905727"
+    },
+    {
+      "supplied": "res/ccZ (1).xml",
+      "inferred_original": "res/ccZ.xml",
+      "sha256": "513785ae63f0dbf47e8890e6802d62d7f8692279efb7825f22372dc66d0a387e"
+    },
+    {
+      "supplied": "res/cgj (1).xml",
+      "inferred_original": "res/cgj.xml",
+      "sha256": "13873b4f9a6108296465dc498e39d0b48f0e0ac1c4dfc69a999caf6c15629e61"
+    },
+    {
+      "supplied": "res/d9p (1).xml",
+      "inferred_original": "res/d9p.xml",
+      "sha256": "c567f2ae633d3822b8f9bd6a480681968654d7a9fb2a41178fb2efe7ef154ed4"
+    },
+    {
+      "supplied": "res/eKr (1).xml",
+      "inferred_original": "res/eKr.xml",
+      "sha256": "3e0acc086156be3912964635d29d8b48496c4763b6cceb5db595741ea437ba55"
+    },
+    {
+      "supplied": "res/eLG (1).xml",
+      "inferred_original": "res/eLG.xml",
+      "sha256": "d11f7cb40d62c880d8e2aea7758942e3acc637fe039cfe7beb46f034530067ae"
+    },
+    {
+      "supplied": "res/fpA (1).xml",
+      "inferred_original": "res/fpA.xml",
+      "sha256": "970f53d1e95f13c0429a75aff38a2e07830265ac83eaf4ac51e4a6dabb89b00c"
+    },
+    {
+      "supplied": "res/heM (1).xml",
+      "inferred_original": "res/heM.xml",
+      "sha256": "d49fb245a5ca9f8ecf535154ad4029c6f61e950150d0ae97193f3fd32b682828"
+    },
+    {
+      "supplied": "res/ieb (1).xml",
+      "inferred_original": "res/ieb.xml",
+      "sha256": "25bd5fcc31145e2c8f53b1facd08adba10b85686d904a016a89548b2b84144b0"
+    },
+    {
+      "supplied": "res/jBN (1).xml",
+      "inferred_original": "res/jBN.xml",
+      "sha256": "b745f55c410318f1c2f6cdebfc7c97c3d839b916f59612c1724cf1233c634edf"
+    },
+    {
+      "supplied": "res/jXP (1).xml",
+      "inferred_original": "res/jXP.xml",
+      "sha256": "d880ccea88f299e7b6dfcb4ff6150b481fbb820b2de224d85bc96d364dd342f8"
+    },
+    {
+      "supplied": "res/jdt (1).xml",
+      "inferred_original": "res/jdt.xml",
+      "sha256": "5262dc51ea0f430b1f478b5c7ddd32ec074b56132bc5fe3a166e05a7fecd91a8"
+    },
+    {
+      "supplied": "res/kIS (1).xml",
+      "inferred_original": "res/kIS.xml",
+      "sha256": "c78801a2991213125ce68229beb39ef32f6280b1197ad851ef3ac4d371d95014"
+    },
+    {
+      "supplied": "res/kgR (1).xml",
+      "inferred_original": "res/kgR.xml",
+      "sha256": "624a5ea5ff8806fc75753dd1697afd1fe46dc91597503dc8d1b7ae2b3f7cb81f"
+    },
+    {
+      "supplied": "res/lJL (1).xml",
+      "inferred_original": "res/lJL.xml",
+      "sha256": "2830ea5d4cb7649645451f3c80c3ceffb2a595c83cdd36d86f55b26378b408c8"
+    },
+    {
+      "supplied": "res/mKt (1).xml",
+      "inferred_original": "res/mKt.xml",
+      "sha256": "df79eb11a49860cf914f303d83bade919e0f2c52e826a079a3c28da08bf3e5d8"
+    },
+    {
+      "supplied": "res/nXP (1).xml",
+      "inferred_original": "res/nXP.xml",
+      "sha256": "52d5db3e727628f06afb874b1307cfcd1aabfe29e86d841a6e8e3fa42daa6b7e"
+    },
+    {
+      "supplied": "res/nlp (1).xml",
+      "inferred_original": "res/nlp.xml",
+      "sha256": "c6bb59f3bc7ea499aafa1c248526c9039ae81ab63cd9ea4ed8abc01cde039bd4"
+    },
+    {
+      "supplied": "res/npL (1).xml",
+      "inferred_original": "res/npL.xml",
+      "sha256": "699e2435b97efbd0883eb62ecdb9d743f1b130c8a319d499609eb424bab7e41a"
+    },
+    {
+      "supplied": "res/nuX (1).xml",
+      "inferred_original": "res/nuX.xml",
+      "sha256": "7692baebd52c9a1ec7f56de0a1499074ec93d2a45fa7d79663928d16353eb819"
+    },
+    {
+      "supplied": "res/nug (1).xml",
+      "inferred_original": "res/nug.xml",
+      "sha256": "ff61fcc0395a590cf1b890720c8f75a0cf065ec85041b1787bd6eb8e7edbf680"
+    },
+    {
+      "supplied": "res/q5M (1).xml",
+      "inferred_original": "res/q5M.xml",
+      "sha256": "b9d7c16a62acc56ea6e0df9fb50d0fbf4436320e6d5cfc7825ad9cde48cd6789"
+    },
+    {
+      "supplied": "res/tJA (1).xml",
+      "inferred_original": "res/tJA.xml",
+      "sha256": "9cacbfaac49a5fa795e2bb87625139b158da633761af75d8a7d9e4e1afbc4d8a"
+    },
+    {
+      "supplied": "res/trI (1).xml",
+      "inferred_original": "res/trI.xml",
+      "sha256": "d63b304975ed6b8a525288e8c40734772374eadb3bbe9cc38a8564d37374c96f"
+    },
+    {
+      "supplied": "res/uB4 (1).xml",
+      "inferred_original": "res/uB4.xml",
+      "sha256": "dca890de866a43e8db2e8148b316cc7f84bf4819afa502cc2ed700ac1a097a1c"
+    },
+    {
+      "supplied": "res/vuF (1).xml",
+      "inferred_original": "res/vuF.xml",
+      "sha256": "c303b3fed8e6c580bf350aef248e2a323082cf3e80158916a8d9777fc3e2aefb"
+    },
+    {
+      "supplied": "res/yLR (1).xml",
+      "inferred_original": "res/yLR.xml",
+      "sha256": "19ca1c350e1c6b799f074fad99f1bc7ea16bf32b2ecb6762fef1b4eac9e3f206"
+    },
+    {
+      "supplied": "res/zJJ (1).xml",
+      "inferred_original": "res/zJJ.xml",
+      "sha256": "235c3cc1092f64512dee814c2b4a1a8e7c019b021340948f9abc498a827812b4"
+    },
+    {
+      "supplied": "res/zSn (1).xml",
+      "inferred_original": "res/zSn.xml",
+      "sha256": "f657bc0ab35ec231dd45f3dae09c72b5f79395868e9915378b4e07df011bd52f"
+    }
+  ],
+  "requires_density_split": true,
+  "signature_verified": false,
+  "dex_modified": false,
+  "ads_patch_applied": false,
+  "resource_warning_lines": 0,
+  "archive_sha256": "c7e93f39a1885a9958ad73926d92e3f5ec744ac92964bace66720fb740e6b1ab",
+  "archive_bytes": 37818015,
+  "blockers": [
+    "Original signed APK is unavailable for publisher verification",
+    "Declared density split package has not been supplied",
+    "No verified native ad-removal patch has been selected for this version"
+  ]
+}

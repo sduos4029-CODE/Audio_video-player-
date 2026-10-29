@@ -1,0 +1,14 @@
+{
+  "status": "experimental research DEX; no runnable APK produced",
+  "target": [
+    "Lwhv;",
+    "H",
+    "()Ljava/util/List;"
+  ],
+  "original_sha256": "ea620017c7314dc115ee712569c3f649ad366daf8f03fe96d129cd720ac039e5",
+  "patched_sha256": "fe8b2f0f8ba296c160616ef340483ee20ff5749b4008d9938a7dda66de2e6b85",
+  "changed_method_count": 1,
+  "server_entitlements_modified": false,
+  "runtime_verified": false,
+  "scope": "Return an empty mutable list from the reviewed native ad-placement accessor; other ad paths are not covered"
+}

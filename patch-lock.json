@@ -1,0 +1,15 @@
+{
+  "observed_version": "9.43.51",
+  "dex": "classes2.dex",
+  "dex_sha256": "ea620017c7314dc115ee712569c3f649ad366daf8f03fe96d129cd720ac039e5",
+  "target": [
+    "Lwhv;",
+    "H",
+    "()Ljava/util/List;"
+  ],
+  "code_sha256": "2e90cabdacb4c20310ed9c643dcc862f64d309e8df200c3366a3b83923a59f77",
+  "code_units": 55,
+  "registers": 6,
+  "tries": 0,
+  "status": "experimental; no device playback verification"
+}

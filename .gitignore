@@ -1,0 +1,10 @@
+work/
+inputs/
+output/
+*.jks
+*.keystore
+__pycache__/
+reports/*
+!reports/STATUS.md
+!reports/input-readiness.json
+!reports/experimental-patch.json
