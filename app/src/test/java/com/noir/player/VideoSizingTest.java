@@ -68,14 +68,15 @@ public class VideoSizingTest {
   var sc=Robolectric.buildService(PlayerUiImprovementTest.UiPlayback.class).create();new PlayerUiImprovementTest().fixture(sc.get());
   try(var ac=Robolectric.buildActivity(VideoActivity.class).setup()){
    VideoPane pane=ac.get().pane;PlayerUiImprovementTest.layout(pane,1080,2200);pane.setSizingMode(VideoGeometry.STRETCH);
-   // Start directly over the play button: adding the second pointer must cancel its click.
-   send(pane,0,MotionEvent.ACTION_DOWN,new float[]{530},new float[]{1100});
-   send(pane,20,MotionEvent.ACTION_POINTER_DOWN|(1<<MotionEvent.ACTION_POINTER_INDEX_SHIFT),new float[]{530,550},new float[]{1100,1100});
-   send(pane,50,MotionEvent.ACTION_MOVE,new float[]{400,680},new float[]{1100,1100});
-   send(pane,80,MotionEvent.ACTION_MOVE,new float[]{250,830},new float[]{1100,1100});
-   send(pane,90,MotionEvent.ACTION_MOVE,new float[]{100,980},new float[]{1100,1100});
-   send(pane,100,MotionEvent.ACTION_POINTER_UP|(1<<MotionEvent.ACTION_POINTER_INDEX_SHIFT),new float[]{250,830},new float[]{1100,1100});
-   send(pane,120,MotionEvent.ACTION_UP,new float[]{250},new float[]{1100});
+   // Start directly over the bottom play button: the second pointer must cancel its click.
+   int[] playLocation=new int[2];pane.play.getLocationOnScreen(playLocation);float playY=playLocation[1]+pane.play.getHeight()/2f;
+   send(pane,0,MotionEvent.ACTION_DOWN,new float[]{530},new float[]{playY});
+   send(pane,20,MotionEvent.ACTION_POINTER_DOWN|(1<<MotionEvent.ACTION_POINTER_INDEX_SHIFT),new float[]{530,550},new float[]{playY,playY});
+   send(pane,50,MotionEvent.ACTION_MOVE,new float[]{400,680},new float[]{playY,playY});
+   send(pane,80,MotionEvent.ACTION_MOVE,new float[]{250,830},new float[]{playY,playY});
+   send(pane,90,MotionEvent.ACTION_MOVE,new float[]{100,980},new float[]{playY,playY});
+   send(pane,100,MotionEvent.ACTION_POINTER_UP|(1<<MotionEvent.ACTION_POINTER_INDEX_SHIFT),new float[]{250,830},new float[]{playY,playY});
+   send(pane,120,MotionEvent.ACTION_UP,new float[]{250},new float[]{playY});
    assertTrue("pinch zoom="+pane.zoom,pane.zoom>1);assertTrue("playback running",sc.get().running);assertEquals(62000,sc.get().position());
    pane.setControlsVisible(false);
    send(pane,200,MotionEvent.ACTION_DOWN,new float[]{500},new float[]{500});

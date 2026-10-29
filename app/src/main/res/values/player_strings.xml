@@ -2,4 +2,9 @@
  <string name="player_filled_button">Filled play button</string>
  <string name="player_lock_screen">Show player on lock screen</string>
  <string name="video_zoom_percent">%1$d%%</string>
+ <string name="video_volume_percent">Volume %1$d%%</string>
+ <string name="video_brightness_percent">Brightness %1$d%%</string>
+ <string name="video_volume_unavailable">Volume is controlled by your device</string>
+ <string name="video_forward_ten">+10 seconds</string>
+ <string name="video_back_ten">−10 seconds</string>
 </resources>
