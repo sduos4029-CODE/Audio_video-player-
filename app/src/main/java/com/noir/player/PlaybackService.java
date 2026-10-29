@@ -8,7 +8,10 @@ import android.media.session.*;
 import android.os.*;
 import android.net.Uri;
 
+@android.annotation.SuppressLint("UnsafeOptInUsageError")
 public class PlaybackService extends Service {
+ final NativeSpectrumCapture spectrumCapture=new NativeSpectrumCapture();
+ public float[] frequencyBands(){return spectrumCapture.levels();}
  public static PlaybackService current;
  androidx.media3.exoplayer.ExoPlayer player; MediaSession session; AudioManager audio; AudioFocusRequest focus;
  public String title="Choose your soundtrack", error=""; public Bitmap artwork; public boolean loading=false;
@@ -25,11 +28,11 @@ public class PlaybackService extends Service {
   if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);
   final int request=++generation; source=uri.toString();
   if(player!=null)player.release(); artwork=null;artist="";hasVideo=false;title=name; error="";loading=true;
-  player=new androidx.media3.exoplayer.ExoPlayer.Builder(this).build();
+  player=new androidx.media3.exoplayer.ExoPlayer.Builder(this,new androidx.media3.exoplayer.DefaultRenderersFactory(this){protected androidx.media3.exoplayer.audio.AudioSink buildAudioSink(Context context,boolean floats,boolean playbackParams){return new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context).setEnableFloatOutput(false).setEnableAudioTrackPlaybackParams(playbackParams).setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[]{new androidx.media3.exoplayer.audio.TeeAudioProcessor(spectrumCapture)}).build();}}).build();
   player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,audioOnly).build());
   player.addListener(new androidx.media3.common.Player.Listener(){
    public void onPlaybackStateChanged(int state){loading=state==androidx.media3.common.Player.STATE_BUFFERING;if(state==androidx.media3.common.Player.STATE_READY&&player.getPlayWhenReady())play();update();}
-   public void onIsPlayingChanged(boolean active){update();}
+   public void onIsPlayingChanged(boolean active){spectrumCapture.setActive(active);update();}
    public void onPlayerError(androidx.media3.common.PlaybackException e){loading=false;error=e.getErrorCodeName()+": Check the URL, network or codec support.";Throwable cause=e;while(cause!=null){if(cause instanceof androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException){error="Server returned HTTP "+((androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)cause).responseCode+". Use a direct playable media link.";break;}cause=cause.getCause();}update();}
    public void onTracksChanged(androidx.media3.common.Tracks tracks){hasVideo=false;for(androidx.media3.common.Tracks.Group group:tracks.getGroups())if(group.getType()==androidx.media3.common.C.TRACK_TYPE_VIDEO)hasVideo=true;}
    public void onMediaMetadataChanged(androidx.media3.common.MediaMetadata metadata){if(metadata.artist!=null)artist=metadata.artist.toString();if(metadata.artworkData!=null){artwork=Artwork.decode(metadata.artworkData,512);update();}}
@@ -50,7 +53,7 @@ public class PlaybackService extends Service {
  public int duration(){try{return player==null?0:(int)Math.max(0,player.getDuration());}catch(Exception e){return 0;}}
  public int position(){try{return player==null?0:(int)player.getCurrentPosition();}catch(Exception e){return 0;}}
  public void play(){if(player==null)return;if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);startForeground(1,notification());if(audio.requestAudioFocus(focus)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED){try{player.play();}catch(Exception ignored){}update();}}
- public void pause(){if(player!=null)try{player.pause();}catch(Exception ignored){}update();}
+ public void pause(){spectrumCapture.setActive(false);if(player!=null)try{player.pause();}catch(Exception ignored){}update();}
  public void toggle(){if(player!=null&&player.getPlayWhenReady())pause();else play();}
  public void seek(int p){if(player!=null&&!loading){try{player.seekTo(Math.max(0,Math.min(duration(),p)));}catch(Exception ignored){}update();}}
  public void skip(int delta){seek(position()+delta);}
@@ -58,5 +61,5 @@ public class PlaybackService extends Service {
  PendingIntent action(String a){return PendingIntent.getService(this,a.hashCode(),new Intent(this,PlaybackService.class).setAction(a),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);}
  Notification notification(){PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);return new Notification.Builder(this,"playback").setSmallIcon(android.R.drawable.ic_media_play).setContentTitle(title).setContentText(!error.isEmpty()?error:loading?"Loading media…":"Pulse Media Player • Background playback").setLargeIcon(artwork).setContentIntent(open).setVisibility(Notification.VISIBILITY_PUBLIC).setOngoing(playing()).addAction(new Notification.Action.Builder(android.R.drawable.ic_media_rew,"Back 10 seconds",action("back")).build()).addAction(new Notification.Action.Builder(playing()?android.R.drawable.ic_media_pause:android.R.drawable.ic_media_play,playing()?"Pause":"Play",action("toggle")).build()).addAction(new Notification.Action.Builder(android.R.drawable.ic_media_ff,"Forward 10 seconds",action("forward")).build()).setStyle(new Notification.MediaStyle().setMediaSession(session.getSessionToken()).setShowActionsInCompactView(0,1,2)).build();}
  public IBinder onBind(Intent i){return null;}
- public void onDestroy(){if(player!=null)player.release();session.release();audio.abandonAudioFocusRequest(focus);if(noisyRegistered)unregisterReceiver(noisy);current=null;super.onDestroy();}
+ public void onDestroy(){spectrumCapture.close();if(player!=null)player.release();session.release();audio.abandonAudioFocusRequest(focus);if(noisyRegistered)unregisterReceiver(noisy);current=null;super.onDestroy();}
 }

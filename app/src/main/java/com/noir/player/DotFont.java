@@ -32,7 +32,7 @@ public final class DotFont {
  public static void draw(Canvas canvas,Paint paint,String text,float left,float baseline,float cell,int color){
   paint.setColor(color);paint.setStyle(Paint.Style.FILL);
   String s=text.toUpperCase(Locale.ROOT);float top=baseline-7*cell;
-  for(int n=0;n<s.length();n++){char letter=s.charAt(n);if(letter==' ')continue;if(letter=='≡')letter='=';String[] rows=GLYPHS.getOrDefault(letter,GLYPHS.get('?'));
+  for(int n=0;n<s.length();n++){char letter=s.charAt(n);if(Character.isWhitespace(letter)||Character.isSpaceChar(letter)||Character.getType(letter)==Character.FORMAT)continue;if(letter=='≡')letter='=';String[] rows=GLYPHS.getOrDefault(letter,GLYPHS.get('?'));
    for(int y=0;y<7;y++)for(int x=0;x<5;x++)if(rows[y].charAt(x)=='1')canvas.drawCircle(left+(n*6+x+.5f)*cell,top+(y+.5f)*cell,cell*.34f,paint);
   }
  }

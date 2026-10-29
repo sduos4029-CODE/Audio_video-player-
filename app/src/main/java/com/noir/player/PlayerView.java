@@ -23,7 +23,7 @@ public class PlayerView extends View {
  void line(Canvas c,float x,float y,float xx,float yy,int col,float width){color(col);p.setStrokeWidth(width);p.setStrokeCap(Paint.Cap.ROUND);c.drawLine(x,y,xx,yy,p);}
  void ring(Canvas c,float x,float y,float r,int col){color(col);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(dots?2.5f:1.5f);c.drawCircle(x,y,r,p);p.setStyle(Paint.Style.FILL);}
  String time(int ms){return String.format(Locale.US,"%d:%02d",ms/60000,(ms/1000)%60);}
- protected void onDraw(Canvas output){super.onDraw(output);int theme=host.prefs.getInt("theme",5);accent=colors[Math.max(0,Math.min(6,theme))];secondary=theme==5?0xffffd43b:theme==6?0xffbf59ff:accent;dots=host.prefs.getBoolean("dots",false);
+ protected void onDraw(Canvas output){super.onDraw(output);PlayerPalette palette=PlayerPalette.forIndex(host.prefs.getInt("theme",5));accent=palette.primary;secondary=palette.secondary;dots=host.prefs.getBoolean("dots",false);
   if(frame==null) {frame=Bitmap.createBitmap(720,1480,Bitmap.Config.ARGB_8888);scene=new Canvas(frame);}frame.eraseColor(Color.BLACK);dotLabels.clear();scene.save();scene.scale(2,2);drawScene(scene);scene.restore();
   output.drawColor(Color.BLACK);scale=Math.min(getWidth()/360f,getHeight()/740f);offset=(getWidth()-360*scale)/2;output.save();output.translate(offset,(getHeight()-740*scale)/2);output.scale(scale,scale);
   if(dots){
@@ -35,13 +35,14 @@ public class PlayerView extends View {
  }
  boolean playing(){return PlaybackService.current!=null&&PlaybackService.current.playing();}
  void drawScene(Canvas c){PlaybackService s=PlaybackService.current;boolean lock=host.prefs.getBoolean("lock",false);centered(c,"P U L S E",35,16,Color.WHITE);text(c,"≡",320,35,22,accent);
-  if(lock){centered(c,android.text.format.DateFormat.getTimeFormat(host).format(new Date()),76,30,Color.WHITE);centered(c,"LOCK-SCREEN PLAYER",96,9,0xff999999);}else{centered(c,"YOUR SOUND. YOUR SPACE.",75,10,0xff888888);}
+  if(lock){centered(c,ClockText.format(new Date(),android.text.format.DateFormat.is24HourFormat(host),TimeZone.getDefault()),76,30,Color.WHITE);centered(c,"LOCK-SCREEN PLAYER",96,9,0xff999999);}else{centered(c,"YOUR SOUND. YOUR SPACE.",75,10,0xff888888);}
   RectF art=new RectF(62,111,298,347);color(accent);p.setStyle(Paint.Style.STROKE);c.drawRoundRect(art,8,8,p);p.setStyle(Paint.Style.FILL);
   if(s!=null&&s.artwork!=null){c.drawBitmap(s.artwork,null,new RectF(66,115,294,343),p);}else{c.save();c.clipRect(66,115,294,343);color(0xffc8c8c8);c.drawCircle(180,185,43,p);color(0xff111111);c.drawCircle(198,173,37,p);for(int j=0;j<22;j++){float y=249+j*4;for(int x=68;x<292;x+=3){float wave=(float)Math.sin(x*.05+j*.72)*2;line(c,x,y+wave,x+1,y+wave,j%3==0?secondary:0xff505050,1);}}c.restore();}
   String title=s==null?"Choose your soundtrack":s.title;if(title.length()>28)title=title.substring(0,27)+"…";centered(c,title,383,20,Color.WHITE);centered(c,s==null?"OPEN AUDIO OR VIDEO":s.loading?"LOADING…":s.audioOnly?"AUDIO ONLY":"VIDEO MODE",405,10,0xff999999);
-  float t=s==null?0:s.position()/1000f;for(int x=25;x<336;x+=5){float height=playing()?(float)(4+Math.abs(Math.sin(x*.08+t*3)*Math.cos(x*.021-t))*27):3;line(c,x,449-height,x,449+height,secondary,2);}
+  float[] levels=s!=null&&s.playing()?s.frequencyBands():new float[AudioSpectrum.BANDS];for(int i=0;i<levels.length;i++){float x=25+i*310f/(levels.length-1),height=levels[i]*28;line(c,x,449-height,x,449+height,secondary,2);}
+
   int duration=s==null?0:s.duration(),position=s==null?0:s.position();float fraction=duration>0?position/(float)duration:0;line(c,25,493,335,493,0xff303030,3);line(c,25,493,25+310*fraction,493,secondary,3);color(secondary);c.drawCircle(25+310*fraction,493,5,p);text(c,time(position),25,517,15,Color.WHITE);text(c,time(duration),282,517,15,Color.WHITE);
-  boolean filled=host.prefs.getBoolean("filled",true);if(filled){color(accent);c.drawCircle(180,566,36,p);}else ring(c,180,566,36,accent);int glyph=filled?Color.BLACK:accent;
+  boolean filled=host.prefs.getBoolean("filled",true);if(filled){color(accent);c.drawCircle(180,566,36,p);}else ring(c,180,566,36,accent);int glyph=filled?PlayerPalette.forIndex(host.prefs.getInt("theme",5)).filledIcon:accent;
   if(playing()){line(c,173,555,173,577,glyph,5);line(c,187,555,187,577,glyph,5);}else{color(glyph);Path path=new Path();path.moveTo(173,553);path.lineTo(173,579);path.lineTo(194,566);path.close();c.drawPath(path,p);}
   ring(c,89,566,21,Color.WHITE);text(c,"-10",72,572,14,Color.WHITE);ring(c,271,566,21,Color.WHITE);text(c,"+10",254,572,14,Color.WHITE);
   AudioManager audio=(AudioManager)host.getSystemService(Context.AUDIO_SERVICE);float volume=audio.getStreamVolume(AudioManager.STREAM_MUSIC)/(float)audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);text(c,"VOL",25,633,9,0xff999999);line(c,60,630,335,630,0xff303030,3);line(c,60,630,60+275*volume,630,secondary,3);color(secondary);c.drawCircle(60+275*volume,630,4,p);
