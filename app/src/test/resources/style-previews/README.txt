@@ -1,0 +1,1 @@
+Synthetic test pattern rendered with the production GLES shader by tools/test-sketch-gpu.py, preview transfer enabled. These are UI test fixtures, not movie frames or AI concept images. Regenerate with the shader smoke tool when intentionally changing the shader.

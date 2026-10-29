@@ -85,6 +85,7 @@ public class PlaybackService extends Service {
   setVideoDecodingEnabled(true);if(changed)update();
  }
  public float currentVideoAspect(){androidx.media3.common.Format format=player==null?null:player.getVideoFormat();if(format!=null&&format.width>0&&format.height>0)return VideoGeometry.sourceAspect(format.width,format.height,format.pixelWidthHeightRatio,format.rotationDegrees);return videoAspect;}
+ SketchPreviewRequest requestSketchPreviews(SketchPreviewRequest.Callback callback){SketchPreviewRequest request=sketchEffect.requestPreviews(callback);if(!useVideoEffects){request.finish(null);return request;}if(player!=null&&!player.getPlayWhenReady()&&player.isCurrentMediaItemSeekable())player.seekTo(player.getCurrentPosition());return request;}
  public int sketchStyle(){return sketchEffect.style;}
  public void setSketchStyle(int value){if(!useVideoEffects)return;sketchEffect.style=SketchStyle.valid(value);setSketchEnabled(true);getSharedPreferences("noir",0).edit().putInt("video_sketch_style",sketchEffect.style).apply();}
  public boolean sketchEnabled(){return useVideoEffects&&sketchEffect.enabled;}

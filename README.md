@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.16 adds all six sketch styles with a selector and fixes double fitting of GPU-rendered video, which could squeeze a widescreen picture into a thin strip. The v1.10 native filtering engine and bundled YouTube page rules remain included.
+Pure-black Android 8+ audio and video player. Version 1.17 replaces the large style list with a compact anchored dropdown, captured-frame previews and Apply/Cancel controls. The corrected Fit behavior and all six video styles remain included. The v1.10 native filtering engine and bundled YouTube page rules remain included.
 
 ## Download
 
-[Download Pulse Media Player v1.16 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.16.apk)
+[Download Pulse Media Player v1.17 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.17.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -164,3 +164,18 @@ Fit preserves the entire source, so a wide movie in portrait will still have bla
 All 76 JVM/Robolectric tests pass. Build and lint complete with the six existing warnings. Validation covers already-fitted 16:9, cinematic, 4:3 and portrait pictures in both screen orientations, source pixel ratio/rotation, the fallback renderer, and a pixel-level circle/height regression using a simulated letterboxed output buffer. Picker tests select all six modes, preserve position/play intent, remember the selected style, restore it after a service restart and keep touch lock effective. Shader tests compile and draw all six modes, verify six distinct outputs, exact normal pass-through, stable repeated frames, monochrome ink/charcoal/outline, color retention in pencil/comic, and black background coverage in outline mode. These checks use simulated Android state and software GLES, not a physical phone’s decoder/compositor or high-resolution performance.
 
 [Style selector preview](docs/screenshots/sketch-picker-v1.16.png) uses an Android-simulated dialog. Exact shader outputs from a synthetic test pattern: [Fine Pencil](docs/screenshots/shader-fine-pencil-v1.16.png) · [Charcoal](docs/screenshots/shader-charcoal-v1.16.png) · [Ink Hatch](docs/screenshots/shader-ink-hatch-v1.16.png) · [Color Pencil](docs/screenshots/shader-color-pencil-v1.16.png) · [White Outline](docs/screenshots/shader-white-outline-v1.16.png) · [Comic](docs/screenshots/shader-comic-v1.16.png).
+
+
+## v1.17 compact dropdown with frame previews
+
+Tap the pencil icon to open a small anchored panel (maximum 296 dp wide, approximately 312 dp high on a typical phone). Use the dropdown to browse Normal video and all six styles. Each option has a thumbnail, and selecting it updates the larger image. **Apply** changes playback and remembers the choice; **Cancel**, closing the popup or tapping outside leaves the active style unchanged. Holding the pencil still toggles the last applied style on/off.
+
+Previews are captured once from the GPU pipeline’s **unfiltered input texture**, so switching options never stacks a new effect on an already-filtered screenshot. The same production shader renders all seven preview images into a small offscreen target, capped at 256 × 144 with the source aspect ratio preserved. The preview path adds display transfer for Bitmap output and restores the video render target/state before normal frame rendering continues. It does not write the style preference or reprepare the player. A paused, seekable source requests a frame at its current position without issuing Play; unavailable frames time out after three seconds with an explanatory message and an option to apply without a preview. HDR previews are labelled as an SDR approximation.
+
+This is a thumbnail of a captured frame, not a live video window or an exact pixel match to every full-resolution/HDR output. The earlier AI-generated comparison board cannot be reproduced exactly by these real-time effects; this panel shows the actual implemented filter instead. The six filter calculations are unchanged from v1.16.
+
+Pending captures are cancelled on close, timeout, touch lock, backgrounding and source changes. Late results are discarded. Choosing an option only changes the candidate image until Apply. Source changes close the panel to avoid applying against a stale preview.
+
+Validation: **82 JVM/Robolectric tests pass**; build and lint complete with the six existing warnings. Tests cover dropdown image bindings, Apply/Cancel, playback/preference preservation, bounded popup dimensions, capture cancellation/timeout, source/lock cleanup, paused requests, RGBA color/vertical readback and one-time delivery. UI preview fixtures are software-GLES renders of a synthetic test pattern and are excluded from the APK. The GLES smoke check additionally verifies preview/video color-transfer correspondence, all six distinct styles, offscreen framebuffer readback and restoration of normal video output. Physical Android GPU capture latency, driver behavior and high-resolution performance remain unverified.
+
+[Compact picker UI preview](docs/screenshots/compact-style-popup-v1.17.png) is an Android-simulated layout with shader-rendered synthetic test data. In the app, the image area uses a captured video frame. No Google APK implementation or AI generation service is added to playback.

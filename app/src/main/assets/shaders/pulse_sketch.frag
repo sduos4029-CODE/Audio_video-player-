@@ -4,7 +4,13 @@ uniform vec2 uPixel;
 uniform vec3 uLuma;
 uniform float uEnabled;
 uniform float uStyle;
+uniform float uPreview;
 varying vec2 vTexCoord;
+
+vec4 outputColor(vec4 linearColor) {
+  // Bitmap previews need display-referred RGB; the video graph applies its own transfer.
+  return vec4(uPreview > 0.5 ? pow(clamp(linearColor.rgb, 0.0, 1.0), vec3(0.454545)) : linearColor.rgb, linearColor.a);
+}
 
 float lightAt(vec2 offset) {
   vec3 rgb = texture2D(uTexSampler, clamp(vTexCoord + offset * uPixel, 0.0, 1.0)).rgb;
@@ -12,7 +18,7 @@ float lightAt(vec2 offset) {
 }
 void main() {
   vec4 source = texture2D(uTexSampler, vTexCoord);
-  if (uEnabled < 0.5) { gl_FragColor = source; return; }
+  if (uEnabled < 0.5) { gl_FragColor = outputColor(source); return; }
   float a = lightAt(vec2(-1.5, -1.5));
   float b = lightAt(vec2( 0.0, -1.5));
   float c = lightAt(vec2( 1.5, -1.5));
@@ -65,5 +71,5 @@ void main() {
     float contour = smoothstep(0.10, 0.30, edge);
     result = color * (1.0 - contour * 0.96);
   }
-  gl_FragColor = vec4(pow(clamp(result, 0.0, 1.0), vec3(2.2)), source.a);
+  gl_FragColor = outputColor(vec4(pow(clamp(result, 0.0, 1.0), vec3(2.2)), source.a));
 }

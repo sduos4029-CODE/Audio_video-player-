@@ -21,7 +21,7 @@ public class VideoRotationTest {
  // to exercise a phone's codec, TextureView compositor or frame pacing.
  static class Output implements InvocationHandler {
   TextureView view;int attaches,clears,plays,pauses,releases,prepares,selections,effectCalls,seeks;Format videoFormat;java.util.List<Effect> effects;long position=62000;
-  boolean playWhenReady;TrackSelectionParameters selection=TrackSelectionParameters.DEFAULT_WITHOUT_CONTEXT;
+  boolean playWhenReady,seekable;TrackSelectionParameters selection=TrackSelectionParameters.DEFAULT_WITHOUT_CONTEXT;
   Player.Listener listener;
   final ExoPlayer player=(ExoPlayer)Proxy.newProxyInstance(ExoPlayer.class.getClassLoader(),new Class<?>[]{ExoPlayer.class},this);
   public Object invoke(Object proxy,Method method,Object[] args){
@@ -34,6 +34,7 @@ public class VideoRotationTest {
     case "setVideoEffects":effects=(java.util.List<Effect>)args[0];effectCalls++;return null;
     case "setMediaItem":if(args.length>1&&args[1] instanceof Long)position=(Long)args[1];return null;
     case "getVideoFormat":return videoFormat;
+    case "isCurrentMediaItemSeekable":return seekable;
     case "addListener":listener=(Player.Listener)args[0];return null;
     case "seekTo":if(args.length==1&&args[0] instanceof Long)position=(Long)args[0];seeks++;return null;
     case "getCurrentPosition":return position;

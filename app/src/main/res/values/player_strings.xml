@@ -16,4 +16,12 @@
  </string-array>
  <string name="video_active_sketch">Sketch style: %1$s. Hold to turn off.</string>
  <string name="video_choose_sketch">Choose sketch style. Hold to use the previous style.</string>
+ <string name="video_style_preview">Style preview</string>
+ <string name="video_style_preview_named">%1$s frame preview</string>
+ <string name="video_preview_loading">Loading frame preview…</string>
+ <string name="video_frame_preview">Frame preview</string>
+ <string name="video_preview_sdr">Frame preview · SDR approximation</string>
+ <string name="video_preview_unavailable">No frame ready. You can still apply the style.</string>
+ <string name="video_apply_style">Apply</string>
+ <string name="video_cancel">Cancel</string>
 </resources>

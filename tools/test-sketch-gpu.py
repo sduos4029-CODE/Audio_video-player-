@@ -94,9 +94,10 @@ gl('glUniform2f', None, I, F, F)(location(program, b'uPixel'), 1 / width, 1 / he
 gl('glUniform3f', None, I, F, F, F)(location(program, b'uLuma'), .2126, .7152, .0722)
 gl('glViewport', None, I, I, I, I)(0, 0, width, height)
 
-def draw(enabled, style=1):
+def draw(enabled, style=1, preview=0):
     gl('glUniform1f', None, I, F)(location(program, b'uEnabled'), enabled)
     gl('glUniform1f', None, I, F)(location(program, b'uStyle'), style)
+    gl('glUniform1f', None, I, F)(location(program, b'uPreview'), preview)
     gl('glDrawArrays', None, U, I, I)(5, 0, 4)
     out = (C.c_ubyte * len(pixels))()
     gl('glReadPixels', None, I, I, I, I, U, U, P)(0, 0, width, height, 0x1908, 0x1401, out)
@@ -126,15 +127,48 @@ for name in ['charcoal', 'ink-hatch', 'white-outline']:
     assert all(max(frames[name][i:i+3]) - min(frames[name][i:i+3]) <= 1 for i in range(0, len(normal), 4)), f'{name} should be monochrome'
 for name in ['color-pencil', 'comic']:
     assert sum(max(frames[name][i:i+3]) - min(frames[name][i:i+3]) > 20 for i in range(0, len(normal), 4)) > width * height * .2, f'{name} lost source color'
+# Compare the thumbnail transfer with the same style's linear video result.
+previews = {'normal': draw(0, 1, 1)}
+for style, name in enumerate(styles, 1):
+    previews[name] = draw(1, style, 1)
+for name, linear in {'normal': normal, **frames}.items():
+    image = previews[name]
+    for i in range(0, len(image), 4):
+        for channel in range(3):
+            # Linear output was quantized to 8-bit for this test, so allow the
+            # one-code error to grow under the display transfer near black.
+            lo = round((max(0, linear[i+channel] - 1) / 255) ** (1 / 2.2) * 255)
+            hi = round((min(255, linear[i+channel] + 1) / 255) ** (1 / 2.2) * 255)
+            assert lo - 1 <= image[i+channel] <= hi + 1, f'{name} preview differs from the video shader'
+        assert image[i+3] == linear[i+3]
+    assert draw(0) == normal, 'Preview rendering changed subsequent normal video'
+# Exercise the preview readback target and restore the original video target.
+fbo, preview_texture = U(), U()
+gl('glGenTextures', None, I, C.POINTER(U))(1, C.byref(preview_texture))
+gl('glBindTexture', None, U, U)(0x0DE1, preview_texture.value)
+for key, value in [(0x2801, 0x2601), (0x2800, 0x2601), (0x2802, 0x812F), (0x2803, 0x812F)]:
+    parameter(0x0DE1, key, value)
+gl('glTexImage2D', None, U, I, I, I, I, I, U, U, P)(0x0DE1, 0, 0x1908, width, height, 0, 0x1908, 0x1401, None)
+gl('glGenFramebuffers', None, I, C.POINTER(U))(1, C.byref(fbo))
+gl('glBindFramebuffer', None, U, U)(0x8D40, fbo.value)
+gl('glFramebufferTexture2D', None, U, U, U, U, I)(0x8D40, 0x8CE0, 0x0DE1, preview_texture.value, 0)
+assert gl('glCheckFramebufferStatus', U, U)(0x8D40) == 0x8CD5, 'Preview framebuffer incomplete'
+gl('glBindTexture', None, U, U)(0x0DE1, texture.value)
+for style, name in enumerate(['normal', *styles]):
+    assert draw(style != 0, max(1, style), 1) == previews[name], f'{name} offscreen readback differs'
+gl('glBindFramebuffer', None, U, U)(0x8D40, 0)
+gl('glDeleteFramebuffers', None, I, C.POINTER(U))(1, C.byref(fbo))
+gl('glDeleteTextures', None, I, C.POINTER(U))(1, C.byref(preview_texture))
+assert draw(0) == normal, 'Preview target restore changed video output'
 try:
     from PIL import Image
     output = ROOT / 'app/build/shader-smoke'
     output.mkdir(parents=True, exist_ok=True)
-    for name, data in {'normal': normal, **frames}.items():
+    for name, data in {'normal': normal, **frames, **{'preview-' + name: frame for name, frame in previews.items()}}.items():
         Image.frombytes('RGBA', (width, height), data).transpose(Image.Transpose.FLIP_TOP_BOTTOM).save(output / f'{name}.png')
 except ImportError:
     pass
-print(json.dumps({'renderer': renderer, 'normal_max_channel_error': max_error, 'styles': results, 'pixels': width * height, 'deterministic': True}))
+print(json.dumps({'renderer': renderer, 'normal_max_channel_error': max_error, 'styles': results, 'pixels': width * height, 'deterministic': True, 'preview_transfer_checked': True, 'preview_framebuffer_checked': True}))
 egl('eglMakeCurrent', U, P, P, P, P)(display, None, None, None)
 egl('eglDestroyContext', U, P, P)(display, context)
 egl('eglDestroySurface', U, P, P)(display, surface)
