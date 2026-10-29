@@ -10,7 +10,6 @@
  <string name="video_hold_unlock">Hold to unlock</string>
  <string name="video_sketch_off">Normal video</string>
  <string name="video_sketch_style_title">Sketch style</string>
- <string name="video_close">Close</string>
  <string-array name="video_sketch_styles">
   <item>Normal video</item><item>Fine Pencil</item><item>Charcoal</item><item>Ink Hatch</item><item>Color Pencil</item><item>White Outline</item><item>Comic</item>
  </string-array>
@@ -24,4 +23,6 @@
  <string name="video_preview_unavailable">No frame ready. You can still apply the style.</string>
  <string name="video_apply_style">Apply</string>
  <string name="video_cancel">Cancel</string>
+ <string name="video_show_style_preview">Show frame preview</string>
+ <string name="video_hide_style_preview">Hide frame preview</string>
 </resources>

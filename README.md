@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.17 replaces the large style list with a compact anchored dropdown, captured-frame previews and Apply/Cancel controls. The corrected Fit behavior and all six video styles remain included. The v1.10 native filtering engine and bundled YouTube page rules remain included.
+Pure-black Android 8+ audio and video player. Version 1.18 reduces the style picker to a single short row, with an image preview that expands only when requested or when choosing another style. The v1.10 native filtering engine and bundled YouTube page rules remain included.
 
 ## Download
 
-[Download Pulse Media Player v1.17 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.17.apk)
+[Download Pulse Media Player v1.18 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.18.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -179,3 +179,14 @@ Pending captures are cancelled on close, timeout, touch lock, backgrounding and 
 Validation: **82 JVM/Robolectric tests pass**; build and lint complete with the six existing warnings. Tests cover dropdown image bindings, Apply/Cancel, playback/preference preservation, bounded popup dimensions, capture cancellation/timeout, source/lock cleanup, paused requests, RGBA color/vertical readback and one-time delivery. UI preview fixtures are software-GLES renders of a synthetic test pattern and are excluded from the APK. The GLES smoke check additionally verifies preview/video color-transfer correspondence, all six distinct styles, offscreen framebuffer readback and restoration of normal video output. Physical Android GPU capture latency, driver behavior and high-resolution performance remain unverified.
 
 [Compact picker UI preview](docs/screenshots/compact-style-popup-v1.17.png) is an Android-simulated layout with shader-rendered synthetic test data. In the app, the image area uses a captured video frame. No Google APK implementation or AI generation service is added to playback.
+
+
+## v1.18 one-row style picker
+
+The pencil opens one short row with a preview thumbnail, style dropdown, Apply checkmark and Close button. The default panel is capped at **264 × 64 dp**, compared with the previous 296 × 312 dp panel. The redundant title and footer rows are removed, while action targets remain at least 48 dp.
+
+Selecting a different style expands a small preview below the row. Tap the thumbnail to expand/collapse it manually. The expanded panel is normally at most **264 × 164 dp**. Dropdown options retain their image thumbnails and full names. Browsing does not apply a style; the checkmark applies it and Close/outside dismissal cancels. Captured-frame rendering and cancellation behavior are unchanged.
+
+All 82 JVM/Robolectric tests pass; build and lint complete with the six existing warnings. The preview test now checks the collapsed 64 dp height, 264 dp width cap, expansion on selection, manual collapse and 48 dp action heights, alongside the existing capture/Apply/Cancel checks. Physical-device testing remains needed.
+
+Previews: [Collapsed row](docs/screenshots/style-row-v1.18.png) · [Expanded image](docs/screenshots/style-preview-expanded-v1.18.png). These are simulated app layouts using a synthetic shader test frame. Actual app previews use the video frame; the AI concept board is not an exact rendering reference.
