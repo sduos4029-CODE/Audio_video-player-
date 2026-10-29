@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.8 adds previous/next tracks, automatic queue advancement and matching media-session controls. It retains the shared combo colors, clean matrix clock and measured native audio spectrum. Dot-matrix mode and in-app YouTube browsing remain available.
+Pure-black Android 8+ audio and video player. Version 1.9 applies the chosen waveform styles: a smooth line in normal mode and a dot wave in matrix mode, both driven by decoded native playback audio. Previous/next tracks, shared combo colors and the clean matrix clock remain available. Dot-matrix mode and in-app YouTube browsing remain available.
 
 ## Download
 
-[Download Pulse Media Player v1.8 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.8.apk)
+[Download Pulse Media Player v1.9 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.9.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -47,7 +47,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 Unit tests cover preserving thin strokes between dot samples, edge cells, YouTube / Music link validation, navigation-policy and simulated in-app routing and Android-simulated drawing of complete controls/time labels. Robolectric rendering screenshots are written to `app/build/player-screenshots/`. Tests also cover Android 15 phone-density system/cutout insets, 48dp targets, retained browser ownership, notification transport actions, background-disable behavior and filtering that preserves media/login endpoints. These do not establish hardware decoding, actual audio continuity, blocked live ads or live YouTube availability.
 
-On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, in-app navigation, playback and fullscreen with no app handoff; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The native-player spectrum now measures decoded PCM: verify that bass/treble and pauses change it in both modes. WebView audio and compressed passthrough are outside this analyzer.
+On a physical device, test local audio and video with embedded artwork, ±10 seconds, pausing during buffering, audio focus and headphones; stream a permitted HTTPS MP4, HLS and DASH source; play downloaded files with networking disabled; paste YouTube watch/share/Shorts links and verify real artwork, in-app navigation, playback and fullscreen with no app handoff; lock the phone in direct-video playback and verify audio continuity; test all themes and both rendering modes. TalkBack currently exposes a canvas summary rather than individually focusable player controls. The native-player visualizations observe decoded PCM: verify that the selected line/dot style responds to audio and flattens on pause. WebView audio and compressed passthrough are outside this analyzer.
 
 On a real phone, additionally test the notification and ±10-second controls while locked, background audio with the setting enabled/disabled, headset disconnection, switching back to native playback, and filter-enabled playback across several YouTube videos. Verify the toolbar remains touchable around the phone’s status icons and camera cutout.
 
@@ -72,3 +72,11 @@ Normal mode has separate Previous/Next controls; matrix mode has dotted previous
 [Ad blocking next steps](docs/AD_BLOCKING_NEXT_STEPS.md) explains the work required: live failure reproduction, a maintained engine, trusted list/script updates, page lifecycle integration and real-device regression testing. It sets measurable goals without promising permanent removal of every ad.
 
 For v1.8, 38 JVM/Robolectric tests pass, including queue boundaries, filtered selection snapshots, separate track/seek actions, automatic advancement, notification PendingIntents and both player layouts. Build and lint complete with the existing lint warnings. [Normal controls preview](docs/screenshots/track-controls-normal-v1.8.png) · [Matrix controls preview](docs/screenshots/track-controls-dots-v1.8.png). These screenshots use a simulated selected track, not physical-device playback.
+
+## v1.9 selected waveform styles
+
+Normal mode uses one continuous curved line through a short 64-point trace of decoded PCM, averaged into display buckets from the loudest channel to avoid opposite-phase cancellation. Matrix mode uses a mirrored frequency envelope rendered directly as equally spaced round dots. The colors follow the selected theme. Paused or stale audio produces a flat display; there is no synthetic moving waveform. The normal trace shows sample polarity/amplitude while the dots show logarithmic FFT band energy, so their shapes deliberately differ. Both use the existing decoded local/direct-stream audio path without a microphone permission. WebView YouTube audio remains outside that path.
+
+The previews use a known 440 Hz test signal through the production rendering helpers: [Smooth line](docs/screenshots/waveform-smooth-v1.9.png) · [Dot wave](docs/screenshots/waveform-dots-v1.9.png). These are test renders, not screenshots of physical-device playback.
+
+Validation for v1.9: 40 JVM/Robolectric tests pass, including PCM trace polarity, anti-phase stereo, paused output, the curved line and spaced dot rendering. Build and lint complete with the existing warnings. Live-device playback remains unverified.

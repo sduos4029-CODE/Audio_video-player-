@@ -9,6 +9,7 @@ import java.util.*;
 
 public class PlayerView extends View {
  final java.util.List<Runnable> dotLabels=new java.util.ArrayList<>(); Canvas dotCanvas; final int[] pixels=new int[720*1480]; final RectF screenRect=new RectF(0,0,360,740); final MainActivity host; final Paint p=new Paint(3); Bitmap frame; Canvas scene; int accent,secondary; float scale,offset; boolean dots;
+ final Path waveformPath=new Path();float[] dotWave=new float[AudioSpectrum.BANDS];
  final int[] colors={Color.WHITE,0xffff343b,0xffffd43b,0xff269bff,0xffbf59ff,0xffff343b,0xff269bff};
  public PlayerView(Context context){super(context);host=(MainActivity)context;setContentDescription("Pulse Media Player audio player. Tap top right for themes, bottom left for library, bottom right for online audio.");setFocusable(true);}
  void color(int c){p.setColor(c);p.setStyle(Paint.Style.FILL);p.setStrokeWidth(dots?2.5f:1.5f);}
@@ -29,7 +30,7 @@ public class PlayerView extends View {
   if(dots){
    frame.getPixels(pixels,0,720,0,0,720,1480);
    for(int y=0;y<1480;y+=4)for(int x=0;x<720;x+=4){int col=DotSampler.color(pixels,720,1480,x,y,4);if((col&0x00ffffff)!=0){color(col);output.drawCircle((x+2)/2f,(y+2)/2f,.72f,p);}}
-   dotCanvas=output;for(Runnable label:dotLabels)label.run();
+   dotCanvas=output;for(Runnable label:dotLabels)label.run();WaveformPainter.dots(output,p,dotWave,25,449,310,28,secondary);
   }else output.drawBitmap(frame,null,screenRect,p);
   output.restore();postInvalidateDelayed(playing()?100:500);
  }
@@ -39,7 +40,7 @@ public class PlayerView extends View {
   RectF art=new RectF(62,111,298,347);color(accent);p.setStyle(Paint.Style.STROKE);c.drawRoundRect(art,8,8,p);p.setStyle(Paint.Style.FILL);
   if(s!=null&&s.artwork!=null){c.drawBitmap(s.artwork,null,new RectF(66,115,294,343),p);}else{c.save();c.clipRect(66,115,294,343);color(0xffc8c8c8);c.drawCircle(180,185,43,p);color(0xff111111);c.drawCircle(198,173,37,p);for(int j=0;j<22;j++){float y=249+j*4;for(int x=68;x<292;x+=3){float wave=(float)Math.sin(x*.05+j*.72)*2;line(c,x,y+wave,x+1,y+wave,j%3==0?secondary:0xff505050,1);}}c.restore();}
   String title=s==null?"Choose your soundtrack":s.title;if(title.length()>28)title=title.substring(0,27)+"…";centered(c,title,383,20,Color.WHITE);centered(c,s==null?"OPEN AUDIO OR VIDEO":s.loading?"LOADING…":s.audioOnly?"AUDIO ONLY":"VIDEO MODE",405,10,0xff999999);
-  float[] levels=s!=null&&s.playing()?s.frequencyBands():new float[AudioSpectrum.BANDS];for(int i=0;i<levels.length;i++){float x=25+i*310f/(levels.length-1),height=levels[i]*28;line(c,x,449-height,x,449+height,secondary,2);}
+  dotWave=s!=null&&s.playing()?s.frequencyBands():new float[AudioSpectrum.BANDS];if(!dots)WaveformPainter.smooth(c,p,waveformPath,s!=null&&s.playing()?s.waveformSamples():new float[AudioWaveform.POINTS],25,449,310,28,secondary,1.5f);
 
   int duration=s==null?0:s.duration(),position=s==null?0:s.position();float fraction=duration>0?position/(float)duration:0;line(c,25,493,335,493,0xff303030,3);line(c,25,493,25+310*fraction,493,secondary,3);color(secondary);c.drawCircle(25+310*fraction,493,5,p);text(c,time(position),25,517,15,Color.WHITE);text(c,time(duration),282,517,15,Color.WHITE);
   boolean filled=host.prefs.getBoolean("filled",true);if(filled){color(accent);c.drawCircle(180,566,36,p);}else ring(c,180,566,36,accent);int glyph=filled?PlayerPalette.forIndex(host.prefs.getInt("theme",5)).filledIcon:accent;

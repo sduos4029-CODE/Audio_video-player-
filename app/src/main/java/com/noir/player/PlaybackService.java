@@ -13,6 +13,7 @@ public class PlaybackService extends Service {
  PlaybackQueue queue;
  final NativeSpectrumCapture spectrumCapture=new NativeSpectrumCapture();
  public float[] frequencyBands(){return spectrumCapture.levels();}
+ public float[] waveformSamples(){return spectrumCapture.waveform();}
  public static PlaybackService current;
  androidx.media3.exoplayer.ExoPlayer player; MediaSession session; AudioManager audio; AudioFocusRequest focus;
  public String title="Choose your soundtrack", error=""; public Bitmap artwork; public boolean loading=false;
