@@ -39,7 +39,7 @@ public class VideoSizingTest {
   new PlayerUiImprovementTest().fixture(sc.get());
   try(var ac=Robolectric.buildActivity(VideoActivity.class).setup()){
    VideoPane pane=ac.get().pane;PlayerUiImprovementTest.layout(pane,1080,2200);
-   pane.fit.performClick();VideoSizingSheet menu=pane.sizingSheet;assertTrue(menu.isShowing());
+   pane.fit.performLongClick();VideoSizingSheet menu=pane.sizingSheet;assertTrue(menu.isShowing());
    Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(4));assertTrue(pane.controlsVisible);
    menu.choices[VideoGeometry.STRETCH].performClick();assertTrue(menu.choices[2].isSelected());
    RectF mapped=picture(pane);assertEquals(0,mapped.left,.01f);assertEquals(2200,mapped.bottom,.01f);

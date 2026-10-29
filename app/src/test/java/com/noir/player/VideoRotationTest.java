@@ -20,7 +20,7 @@ public class VideoRotationTest {
  // Recording the ExoPlayer interface verifies lifecycle calls without claiming
  // to exercise a phone's codec, TextureView compositor or frame pacing.
  static class Output implements InvocationHandler {
-  TextureView view;int attaches,clears,plays,pauses,releases;long position=62000;
+  TextureView view;int attaches,clears,plays,pauses,releases,prepares,selections,effectCalls,seeks;Format videoFormat;java.util.List<Effect> effects;long position=62000;
   boolean playWhenReady;TrackSelectionParameters selection=TrackSelectionParameters.DEFAULT_WITHOUT_CONTEXT;
   Player.Listener listener;
   final ExoPlayer player=(ExoPlayer)Proxy.newProxyInstance(ExoPlayer.class.getClassLoader(),new Class<?>[]{ExoPlayer.class},this);
@@ -29,8 +29,13 @@ public class VideoRotationTest {
     case "setVideoTextureView":view=(TextureView)args[0];attaches++;return null;
     case "clearVideoTextureView":if(view==args[0])view=null;clears++;return null;
     case "getTrackSelectionParameters":return selection;
-    case "setTrackSelectionParameters":selection=(TrackSelectionParameters)args[0];return null;
+    case "setTrackSelectionParameters":selections++;selection=(TrackSelectionParameters)args[0];return null;
+    case "prepare":prepares++;return null;
+    case "setVideoEffects":effects=(java.util.List<Effect>)args[0];effectCalls++;return null;
+    case "setMediaItem":if(args.length>1&&args[1] instanceof Long)position=(Long)args[1];return null;
+    case "getVideoFormat":return videoFormat;
     case "addListener":listener=(Player.Listener)args[0];return null;
+    case "seekTo":if(args.length==1&&args[0] instanceof Long)position=(Long)args[0];seeks++;return null;
     case "getCurrentPosition":return position;
     case "getDuration":return 242000L;
     case "getPlayWhenReady":case "isPlaying":return playWhenReady;
@@ -74,7 +79,7 @@ public class VideoRotationTest {
   try(var ac=Robolectric.buildActivity(VideoActivity.class).setup()){
    VideoPane p=ac.get().pane;
    for(int[] size:new int[][]{{1080,2200},{2400,1080}}){PlayerUiImprovementTest.layout(p,size[0],size[1]);int[] xy=new int[2];p.fit.getLocationOnScreen(xy);assertTrue(xy[0]>size[0]-p.dp(80));assertTrue(xy[1]>size[1]-p.dp(100));assertEquals(p.dp(48),p.fit.getHeight());int[] play=new int[2];p.play.getLocationOnScreen(play);assertTrue(play[0]+p.play.getWidth()<=xy[0]);}
-   p.fit.performClick();assertTrue(p.sizingSheet.isShowing());
+   p.fit.performLongClick();assertTrue(p.sizingSheet.isShowing());
    int[] modes={VideoGeometry.FIT,VideoGeometry.CROP,VideoGeometry.STRETCH};PlayerIcons.Icon[] icons={PlayerIcons.Icon.RESIZE_FIT,PlayerIcons.Icon.RESIZE_CROP,PlayerIcons.Icon.RESIZE_STRETCH};
    for(int i=0;i<modes.length;i++){p.sizingSheet.choices[modes[i]].performClick();assertEquals(icons[i],((PlayerIcons)p.fit.getDrawable()).icon);}
    p.sizingSheet.dismiss();p.setSizingMode(VideoGeometry.FIT);

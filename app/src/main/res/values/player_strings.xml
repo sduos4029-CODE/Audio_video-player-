@@ -7,4 +7,9 @@
  <string name="video_volume_unavailable">Volume is controlled by your device</string>
  <string name="video_forward_ten">+10 seconds</string>
  <string name="video_back_ten">−10 seconds</string>
+ <string name="video_hold_unlock">Hold to unlock</string>
+ <string name="video_sketch_on">Sketch ON</string>
+ <string name="video_sketch_off">Normal video</string>
+ <string name="video_enable_sketch">Enable sketch video</string>
+ <string name="video_disable_sketch">Disable sketch video</string>
 </resources>

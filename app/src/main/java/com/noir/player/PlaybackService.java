@@ -11,6 +11,7 @@ import android.net.Uri;
 @android.annotation.SuppressLint("UnsafeOptInUsageError")
 public class PlaybackService extends Service {
  PlaybackQueue queue;
+ final SketchEffect sketchEffect=new SketchEffect(false);boolean videoDecodingEnabled,useVideoEffects=true;public String effectNotice="";
  final NativeSpectrumCapture spectrumCapture=new NativeSpectrumCapture();
  public float[] frequencyBands(){return spectrumCapture.levels();}
  public float[] waveformSamples(){return spectrumCapture.waveform();}
@@ -19,29 +20,39 @@ public class PlaybackService extends Service {
  public String title="Choose your soundtrack", error=""; public Bitmap artwork; public boolean loading=false;
  public String artist="";public boolean hasVideo;public boolean audioOnly=true;public boolean videoFrameReady;public float videoAspect=16/9f;private Object videoOwner;private java.lang.ref.WeakReference<android.view.TextureView> videoTexture=new java.lang.ref.WeakReference<>(null);private boolean metadataHasVideo; public String source=""; private int generation=0; private boolean resumeOnFocus; private boolean noisyRegistered;
  private final BroadcastReceiver noisy=new BroadcastReceiver(){public void onReceive(Context c,Intent i){pause();}};
- public void onCreate(){super.onCreate();current=this;audio=(AudioManager)getSystemService(AUDIO_SERVICE);
+ public void onCreate(){super.onCreate();current=this;sketchEffect.enabled=getSharedPreferences("noir",0).getBoolean("video_sketch",false);audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   focus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()).setOnAudioFocusChangeListener(change->{if(change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK){if(player!=null)player.setVolume(.2f);}else if(change<0){resumeOnFocus=change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT&&playing();pause();}else {if(player!=null)player.setVolume(1);if(resumeOnFocus){resumeOnFocus=false;play();}}}).build();
   session=new MediaSession(this,"Pulse Media Player");session.setCallback(new MediaSession.Callback(){public void onPlay(){play();} public void onPause(){pause();} public void onSeekTo(long p){seek((int)p);} public void onFastForward(){skip(10000);}public void onRewind(){skip(-10000);} public void onSkipToPrevious(){previousTrack();}public void onSkipToNext(){nextTrack();} public void onStop(){stopSelf();}});session.setActive(true);
   ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(new NotificationChannel("playback","Music playback",NotificationManager.IMPORTANCE_LOW));
   registerReceiver(noisy,new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));noisyRegistered=true;
  }
  public int onStartCommand(Intent i,int flags,int id){startForeground(1,notification());if(i!=null){String a=i.getAction();if("load".equals(a)){String uri=i.getStringExtra("uri"),name=i.getStringExtra("title");queue=new PlaybackQueue(i.getBooleanExtra("library_queue",false)?LibraryStore.read(getSharedPreferences("noir",0),"playback_queue"):java.util.Collections.emptyList(),uri,name);load(Uri.parse(uri),name);}else if("toggle".equals(a))toggle();else if("back".equals(a))skip(-10000);else if("forward".equals(a))skip(10000);else if("previous".equals(a))previousTrack();else if("next".equals(a))nextTrack();}return START_NOT_STICKY;}
- void load(Uri uri,String name){
+ void load(Uri uri,String name){load(uri,name,0,true);}
+ void load(Uri uri,String name,long startPosition,boolean startPlaying){
   if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);
   final int request=++generation; source=uri.toString();
   if(player!=null)player.release(); artwork=null;artist="";hasVideo=false;metadataHasVideo=false;videoFrameReady=false;title=name; error="";loading=true;
   player=createPlayer();
-  player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,audioOnly).build());android.view.TextureView output=videoTexture.get();if(!audioOnly&&output!=null)player.setVideoTextureView(output);
+  if(useVideoEffects)player.setVideoEffects(java.util.Collections.singletonList(sketchEffect));
+  player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,!videoDecodingEnabled).build());android.view.TextureView output=videoTexture.get();if(videoDecodingEnabled&&output!=null)player.setVideoTextureView(output);
   player.addListener(new androidx.media3.common.Player.Listener(){
    public void onPlaybackStateChanged(int state){if(request!=generation)return;if(state==androidx.media3.common.Player.STATE_ENDED){onTrackEnded(request);return;}loading=state==androidx.media3.common.Player.STATE_BUFFERING;update();}
    public void onIsPlayingChanged(boolean active){if(request!=generation)return;spectrumCapture.setActive(active);update();}
-   public void onPlayerError(androidx.media3.common.PlaybackException e){if(request!=generation)return;loading=false;error=e.getErrorCodeName()+": Check the URL, network or codec support.";Throwable cause=e;while(cause!=null){if(cause instanceof androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException){error="Server returned HTTP "+((androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)cause).responseCode+". Use a direct playable media link.";break;}cause=cause.getCause();}update();}
+   public void onPlayerError(androidx.media3.common.PlaybackException e){
+    if(request!=generation)return;
+    if(useVideoEffects&&(e.errorCode==androidx.media3.common.PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSOR_INIT_FAILED||e.errorCode==androidx.media3.common.PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED)){
+     final long savedPosition=position();final boolean resume=player.getPlayWhenReady();useVideoEffects=false;sketchEffect.enabled=false;getSharedPreferences("noir",0).edit().putBoolean("video_sketch",false).apply();effectNotice="Sketch is unavailable on this device. Normal video rendering was restored.";
+     new Handler(getMainLooper()).post(()->{if(request==generation)load(uri,name,savedPosition,resume);});return;
+    }
+    loading=false;error=PlaybackDetails.failure(e);update();
+   }
+
    public void onTracksChanged(androidx.media3.common.Tracks tracks){if(request!=generation)return;hasVideo=metadataHasVideo;for(androidx.media3.common.Tracks.Group group:tracks.getGroups())if(group.getType()==androidx.media3.common.C.TRACK_TYPE_VIDEO)hasVideo=true;}
    public void onVideoSizeChanged(androidx.media3.common.VideoSize size){if(request==generation&&size.width>0&&size.height>0)videoAspect=size.width*size.pixelWidthHeightRatio/size.height;}
    public void onRenderedFirstFrame(){if(request==generation&&videoOwner!=null)videoFrameReady=true;}
    public void onMediaMetadataChanged(androidx.media3.common.MediaMetadata metadata){if(request!=generation)return;if(metadata.artist!=null)artist=metadata.artist.toString();if(metadata.artworkData!=null){artwork=Artwork.decode(metadata.artworkData,512);update();}}
   });
-  player.setMediaItem(androidx.media3.common.MediaItem.fromUri(uri));player.prepare();play();update();
+  if(startPosition>0)player.setMediaItem(androidx.media3.common.MediaItem.fromUri(uri),startPosition);else player.setMediaItem(androidx.media3.common.MediaItem.fromUri(uri));player.prepare();if(startPlaying)play();update();
   new Thread(()->{Bitmap result=null;boolean video=false;try{MediaMetadataRetriever r=new MediaMetadataRetriever();try{
    if("https".equals(uri.getScheme()))return;
    r.setDataSource(this,uri);video="yes".equalsIgnoreCase(r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO));byte[] bytes=r.getEmbeddedPicture();
@@ -52,25 +63,30 @@ public class PlaybackService extends Service {
  }
  public void suspendForWeb(){pause();session.setActive(false);stopForeground(STOP_FOREGROUND_REMOVE);}
  /** Media3 owns the TextureView callbacks, including resize and surface recreation. */
- androidx.media3.exoplayer.ExoPlayer createPlayer(){return new androidx.media3.exoplayer.ExoPlayer.Builder(this,new androidx.media3.exoplayer.DefaultRenderersFactory(this){protected androidx.media3.exoplayer.audio.AudioSink buildAudioSink(Context context,boolean floats,boolean playbackParams){return new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context).setEnableFloatOutput(false).setEnableAudioTrackPlaybackParams(playbackParams).setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[]{new androidx.media3.exoplayer.audio.TeeAudioProcessor(spectrumCapture)}).build();}}).build();}
+ androidx.media3.exoplayer.ExoPlayer createPlayer(){return new androidx.media3.exoplayer.ExoPlayer.Builder(this,new androidx.media3.exoplayer.DefaultRenderersFactory(this){protected androidx.media3.exoplayer.audio.AudioSink buildAudioSink(Context context,boolean floats,boolean playbackParams){return new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context).setEnableFloatOutput(false).setEnableAudioTrackPlaybackParams(playbackParams).setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[]{new androidx.media3.exoplayer.audio.TeeAudioProcessor(spectrumCapture)}).build();}}.setEnableDecoderFallback(true)).build();}
+ /** True here means background decoding is stopped, not a foreground cover switch. */
  public void setAudioOnly(boolean value){
-  if(audioOnly==value)return;audioOnly=value;videoFrameReady=false;
+  boolean changed=audioOnly!=value||videoDecodingEnabled==value;
+  audioOnly=value;if(!changed)return;
   android.view.TextureView output=videoTexture.get();
-  if(player!=null){
-   // Attach the output before enabling video so a new decoder has its target.
-   if(!value&&output!=null)player.setVideoTextureView(output);
-   player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,value).build());
-   if(value&&output!=null)player.clearVideoTextureView(output);
-  }
+  if(!value&&output!=null&&player!=null)player.setVideoTextureView(output);
+  setVideoDecodingEnabled(!value);
+  if(value){videoFrameReady=false;if(player!=null&&output!=null)player.clearVideoTextureView(output);}
   update();
  }
- public void attachVideoTextureView(Object owner,android.view.TextureView view){
+ private void setVideoDecodingEnabled(boolean value){if(videoDecodingEnabled==value)return;videoDecodingEnabled=value;if(player!=null)player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,!value).build());}
+ public void attachVideoTextureView(Object owner,android.view.TextureView view){setForegroundOutput(owner,view,false);}
+ public void keepVideoWarm(Object owner,android.view.TextureView view){setForegroundOutput(owner,view,true);}
+ private void setForegroundOutput(Object owner,android.view.TextureView view,boolean audioMode){
   if(owner==null||view==null)return;
-  boolean same=owner==videoOwner&&view==videoTexture.get();
-  if(same&&!audioOnly)return;
-  videoOwner=owner;videoTexture=new java.lang.ref.WeakReference<>(view);videoFrameReady=false;
-  if(audioOnly)setAudioOnly(false);else if(player!=null)player.setVideoTextureView(view);
+  boolean same=owner==videoOwner&&view==videoTexture.get();if(same&&audioOnly==audioMode&&videoDecodingEnabled)return;
+  boolean changed=audioOnly!=audioMode;audioOnly=audioMode;
+  if(!same){videoOwner=owner;videoTexture=new java.lang.ref.WeakReference<>(view);videoFrameReady=false;if(player!=null)player.setVideoTextureView(view);}
+  setVideoDecodingEnabled(true);if(changed)update();
  }
+ public boolean sketchEnabled(){return useVideoEffects&&sketchEffect.enabled;}
+ public boolean canSketch(){return useVideoEffects;}
+ public void setSketchEnabled(boolean value){if(value&&!useVideoEffects)return;sketchEffect.enabled=value;if(player!=null&&!player.getPlayWhenReady())player.seekTo(player.getCurrentPosition());getSharedPreferences("noir",0).edit().putBoolean("video_sketch",value).apply();}
 
  public boolean releaseVideoSurface(Object owner){if(owner!=videoOwner||owner==null)return false;android.view.TextureView output=videoTexture.get();if(player!=null&&output!=null)player.clearVideoTextureView(output);videoOwner=null;videoTexture.clear();videoFrameReady=false;return true;}
  public boolean isVideoSurfaceOwner(Object owner){return owner!=null&&owner==videoOwner&&videoTexture.get()!=null;}

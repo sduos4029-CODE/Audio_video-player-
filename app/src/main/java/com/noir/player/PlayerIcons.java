@@ -5,7 +5,7 @@ import android.graphics.drawable.Drawable;
 
 /** Small vector icons avoid font-dependent playback glyphs. */
 public final class PlayerIcons extends Drawable {
- public enum Icon { PLAY, PAUSE, PREVIOUS, NEXT, BACK_10, FORWARD_10, AUDIO, VIDEO, ROTATE, EXPAND, RESIZE, RESIZE_FIT, RESIZE_CROP, RESIZE_STRETCH, BACK, MORE, CLOSE }
+ public enum Icon { PLAY, PAUSE, PREVIOUS, NEXT, BACK_10, FORWARD_10, AUDIO, VIDEO, ROTATE, EXPAND, RESIZE, RESIZE_FIT, RESIZE_CROP, RESIZE_STRETCH, BACK, MORE, CLOSE, LOCK, SKETCH }
  private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
  private final Path path=new Path();
  final Icon icon;final int color;
@@ -24,6 +24,8 @@ public final class PlayerIcons extends Drawable {
    case RESIZE_FIT:case RESIZE_CROP:case RESIZE_STRETCH:{target.drawRoundRect(3,5,21,19,1,1,paint);if(icon==Icon.RESIZE_FIT){target.drawLine(7,6,7,18,paint);target.drawLine(17,6,17,18,paint);}else if(icon==Icon.RESIZE_CROP){target.drawLine(8,3,8,21,paint);target.drawLine(16,3,16,21,paint);}else{target.drawLine(6,12,18,12,paint);target.drawLine(6,12,9,9,paint);target.drawLine(6,12,9,15,paint);target.drawLine(18,12,15,9,paint);target.drawLine(18,12,15,15,paint);}break;}
    case BACK:target.drawLine(19,12,5,12,paint);target.drawLine(5,12,11,6,paint);target.drawLine(5,12,11,18,paint);break;
    case MORE:paint.setStyle(Paint.Style.FILL);for(int y=5;y<=19;y+=7)target.drawCircle(12,y,1.6f,paint);break;
+   case LOCK:target.drawRoundRect(5,10,19,21,2,2,paint);target.drawArc(8,3,16,15,180,180,false,paint);paint.setStyle(Paint.Style.FILL);target.drawCircle(12,15,1.5f,paint);target.drawLine(12,15,12,18,paint);break;
+   case SKETCH:target.save();target.rotate(40,12,12);target.drawRect(9,4,15,17,paint);path.reset();path.moveTo(9,17);path.lineTo(12,21);path.lineTo(15,17);target.drawPath(path,paint);target.drawLine(9,7,15,7,paint);target.restore();break;
    case CLOSE:target.drawLine(6,6,18,18,paint);target.drawLine(6,18,18,6,paint);break;
   }target.restore();
  }

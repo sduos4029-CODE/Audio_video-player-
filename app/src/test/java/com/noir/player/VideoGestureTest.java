@@ -49,7 +49,7 @@ public class VideoGestureTest {
    VideoPane p=ac.get().pane;setup(sc.get(),p);
    for(int[] size:new int[][]{{1080,2200},{2400,1080}}){PlayerUiImprovementTest.layout(p,size[0],size[1]);int[] xy=new int[2];p.play.getLocationOnScreen(xy);assertTrue(xy[1]>size[1]-p.dp(170));assertTrue(p.play.getHeight()>=p.dp(48));assertTrue(p.seek.getBottom()<=((View)p.seek.getParent()).getHeight());}
    PlayerUiImprovementTest.save(p,1080,2200,"video-bottom-v1.13.png");PlayerUiImprovementTest.save(p,2400,1080,"video-bottom-landscape-v1.13.png");
-   p.fit.performClick();VideoSizingSheet sheet=p.sizingSheet;assertTrue(sheet.getWindow().getAttributes().width<=p.dp(300));
+   p.fit.performLongClick();VideoSizingSheet sheet=p.sizingSheet;assertTrue(sheet.getWindow().getAttributes().width<=p.dp(300));
    View content=sheet.getWindow().getDecorView();content.measure(View.MeasureSpec.makeMeasureSpec(p.dp(300),View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(p.dp(250),View.MeasureSpec.AT_MOST));assertTrue(content.getMeasuredHeight()<=p.dp(170));
    assertTrue(sheet.zoomIn.getMeasuredHeight()>=p.dp(48));PlayerUiImprovementTest.save(content,p.dp(300),content.getMeasuredHeight(),"video-size-compact-v1.13.png");sheet.dismiss();
   }finally{sc.destroy();}

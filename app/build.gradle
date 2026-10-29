@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
  namespace 'com.noir.player'
  compileSdk 35
- defaultConfig { applicationId 'com.noir.player'; minSdk 26; targetSdk 35; versionCode 15; versionName '1.14' }
+ defaultConfig { applicationId 'com.noir.player'; minSdk 26; targetSdk 35; versionCode 16; versionName '1.15' }
  testOptions { unitTests.includeAndroidResources = true }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
@@ -10,6 +10,7 @@ android {
 dependencies {
  implementation "androidx.webkit:webkit:1.12.1"
  implementation "androidx.media3:media3-exoplayer:1.5.1"
+ implementation "androidx.media3:media3-effect:1.5.1"
  implementation "androidx.media3:media3-exoplayer-hls:1.5.1"
  implementation "androidx.media3:media3-exoplayer-dash:1.5.1"
  testImplementation "junit:junit:4.13.2"
