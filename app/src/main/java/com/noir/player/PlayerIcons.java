@@ -5,7 +5,7 @@ import android.graphics.drawable.Drawable;
 
 /** Small vector icons avoid font-dependent playback glyphs. */
 public final class PlayerIcons extends Drawable {
- public enum Icon { PLAY, PAUSE, PREVIOUS, NEXT, BACK_10, FORWARD_10, AUDIO, VIDEO, ROTATE, EXPAND, RESIZE, BACK, MORE, CLOSE }
+ public enum Icon { PLAY, PAUSE, PREVIOUS, NEXT, BACK_10, FORWARD_10, AUDIO, VIDEO, ROTATE, EXPAND, RESIZE, RESIZE_FIT, RESIZE_CROP, RESIZE_STRETCH, BACK, MORE, CLOSE }
  private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
  private final Path path=new Path();
  final Icon icon;final int color;
@@ -21,6 +21,7 @@ public final class PlayerIcons extends Drawable {
    case ROTATE:target.drawArc(3,3,21,21,205,235,false,paint);path.reset();path.moveTo(19,2);path.lineTo(21,8);path.lineTo(15,7);target.drawPath(path,paint);target.save();target.rotate(-28,12,12);target.drawRoundRect(8,6,16,18,1,1,paint);target.restore();break;
    case EXPAND:target.drawLine(4,9,4,4,paint);target.drawLine(4,4,9,4,paint);target.drawLine(15,4,20,4,paint);target.drawLine(20,4,20,9,paint);target.drawLine(4,15,4,20,paint);target.drawLine(4,20,9,20,paint);target.drawLine(15,20,20,20,paint);target.drawLine(20,20,20,15,paint);break;
    case RESIZE:target.drawRoundRect(6,7,18,17,1,1,paint);target.drawLine(3,10,3,4,paint);target.drawLine(3,4,9,4,paint);target.drawLine(15,20,21,20,paint);target.drawLine(21,20,21,14,paint);break;
+   case RESIZE_FIT:case RESIZE_CROP:case RESIZE_STRETCH:{target.drawRoundRect(3,5,21,19,1,1,paint);if(icon==Icon.RESIZE_FIT){target.drawLine(7,6,7,18,paint);target.drawLine(17,6,17,18,paint);}else if(icon==Icon.RESIZE_CROP){target.drawLine(8,3,8,21,paint);target.drawLine(16,3,16,21,paint);}else{target.drawLine(6,12,18,12,paint);target.drawLine(6,12,9,9,paint);target.drawLine(6,12,9,15,paint);target.drawLine(18,12,15,9,paint);target.drawLine(18,12,15,15,paint);}break;}
    case BACK:target.drawLine(19,12,5,12,paint);target.drawLine(5,12,11,6,paint);target.drawLine(5,12,11,18,paint);break;
    case MORE:paint.setStyle(Paint.Style.FILL);for(int y=5;y<=19;y+=7)target.drawCircle(12,y,1.6f,paint);break;
    case CLOSE:target.drawLine(6,6,18,18,paint);target.drawLine(6,18,18,6,paint);break;

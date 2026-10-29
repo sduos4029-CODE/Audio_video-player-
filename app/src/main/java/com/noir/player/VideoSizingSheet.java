@@ -22,7 +22,7 @@ final class VideoSizingSheet extends Dialog {
   TextView title=text("Video size",16);header.addView(title,new LinearLayout.LayoutParams(0,dp(48),1));
   reset=button("Reset",()->{pane.changeZoom(1);refresh();});reset.setContentDescription("Reset zoom");header.addView(reset,new LinearLayout.LayoutParams(dp(48),dp(48)));
   ImageButton close=pane.icon(PlayerIcons.Icon.CLOSE,"Close video size");close.setOnClickListener(v->dismiss());header.addView(close,new LinearLayout.LayoutParams(dp(48),dp(48)));root.addView(header);
-  LinearLayout sizes=new LinearLayout(getContext());String[] names={"Fit","Crop","Stretch"};
+  LinearLayout sizes=new LinearLayout(getContext());String[] names={"Fit screen","Crop","Stretch"};
   for(int i=0;i<3;i++){final int index=i;Button b=button(names[i],()->{pane.setSizingMode(index);refresh();});b.setContentDescription(new String[]{"Fit: show the entire video","Crop: fill screen, crop edges","Stretch: fill screen, change proportions"}[i]);choices[i]=b;LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(48),1);lp.setMargins(dp(2),0,dp(2),0);sizes.addView(b,lp);}root.addView(sizes);
   LinearLayout zoomRow=new LinearLayout(getContext());zoomRow.setGravity(Gravity.CENTER_VERTICAL);
   zoomOut=button("−",()->{pane.changeZoom(pane.zoom/1.25f);refresh();});zoomOut.setContentDescription("Zoom out");zoomRow.addView(zoomOut,new LinearLayout.LayoutParams(dp(48),dp(48)));
