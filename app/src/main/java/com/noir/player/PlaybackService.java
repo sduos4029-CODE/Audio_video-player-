@@ -17,7 +17,7 @@ public class PlaybackService extends Service {
  public static PlaybackService current;
  androidx.media3.exoplayer.ExoPlayer player; MediaSession session; AudioManager audio; AudioFocusRequest focus;
  public String title="Choose your soundtrack", error=""; public Bitmap artwork; public boolean loading=false;
- public String artist="";public boolean hasVideo;public boolean audioOnly=true; public String source=""; private int generation=0; private boolean resumeOnFocus; private boolean noisyRegistered;
+ public String artist="";public boolean hasVideo;public boolean audioOnly=true;public boolean videoFrameReady;public float videoAspect=16/9f;private Object videoOwner;private android.view.Surface videoSurface;private boolean metadataHasVideo; public String source=""; private int generation=0; private boolean resumeOnFocus; private boolean noisyRegistered;
  private final BroadcastReceiver noisy=new BroadcastReceiver(){public void onReceive(Context c,Intent i){pause();}};
  public void onCreate(){super.onCreate();current=this;audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   focus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()).setOnAudioFocusChangeListener(change->{if(change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK){if(player!=null)player.setVolume(.2f);}else if(change<0){resumeOnFocus=change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT&&playing();pause();}else {if(player!=null)player.setVolume(1);if(resumeOnFocus){resumeOnFocus=false;play();}}}).build();
@@ -29,28 +29,34 @@ public class PlaybackService extends Service {
  void load(Uri uri,String name){
   if(WebPlaybackService.current!=null)WebPlaybackService.current.suspendForNative();session.setActive(true);
   final int request=++generation; source=uri.toString();
-  if(player!=null)player.release(); artwork=null;artist="";hasVideo=false;title=name; error="";loading=true;
+  if(player!=null)player.release(); artwork=null;artist="";hasVideo=false;metadataHasVideo=false;videoFrameReady=false;title=name; error="";loading=true;
   player=new androidx.media3.exoplayer.ExoPlayer.Builder(this,new androidx.media3.exoplayer.DefaultRenderersFactory(this){protected androidx.media3.exoplayer.audio.AudioSink buildAudioSink(Context context,boolean floats,boolean playbackParams){return new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context).setEnableFloatOutput(false).setEnableAudioTrackPlaybackParams(playbackParams).setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[]{new androidx.media3.exoplayer.audio.TeeAudioProcessor(spectrumCapture)}).build();}}).build();
-  player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,audioOnly).build());
+  player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,audioOnly).build());if(!audioOnly&&videoSurface!=null&&videoSurface.isValid())player.setVideoSurface(videoSurface);
   player.addListener(new androidx.media3.common.Player.Listener(){
    public void onPlaybackStateChanged(int state){if(request!=generation)return;if(state==androidx.media3.common.Player.STATE_ENDED){onTrackEnded(request);return;}loading=state==androidx.media3.common.Player.STATE_BUFFERING;if(state==androidx.media3.common.Player.STATE_READY&&player.getPlayWhenReady())play();update();}
    public void onIsPlayingChanged(boolean active){if(request!=generation)return;spectrumCapture.setActive(active);update();}
    public void onPlayerError(androidx.media3.common.PlaybackException e){if(request!=generation)return;loading=false;error=e.getErrorCodeName()+": Check the URL, network or codec support.";Throwable cause=e;while(cause!=null){if(cause instanceof androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException){error="Server returned HTTP "+((androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)cause).responseCode+". Use a direct playable media link.";break;}cause=cause.getCause();}update();}
-   public void onTracksChanged(androidx.media3.common.Tracks tracks){if(request!=generation)return;hasVideo=false;for(androidx.media3.common.Tracks.Group group:tracks.getGroups())if(group.getType()==androidx.media3.common.C.TRACK_TYPE_VIDEO)hasVideo=true;}
+   public void onTracksChanged(androidx.media3.common.Tracks tracks){if(request!=generation)return;hasVideo=metadataHasVideo;for(androidx.media3.common.Tracks.Group group:tracks.getGroups())if(group.getType()==androidx.media3.common.C.TRACK_TYPE_VIDEO)hasVideo=true;}
+   public void onVideoSizeChanged(androidx.media3.common.VideoSize size){if(request==generation&&size.width>0&&size.height>0)videoAspect=size.width*size.pixelWidthHeightRatio/size.height;}
+   public void onRenderedFirstFrame(){if(request==generation&&videoOwner!=null)videoFrameReady=true;}
    public void onMediaMetadataChanged(androidx.media3.common.MediaMetadata metadata){if(request!=generation)return;if(metadata.artist!=null)artist=metadata.artist.toString();if(metadata.artworkData!=null){artwork=Artwork.decode(metadata.artworkData,512);update();}}
   });
   player.setMediaItem(androidx.media3.common.MediaItem.fromUri(uri));player.prepare();play();update();
-  new Thread(()->{Bitmap result=null;try{MediaMetadataRetriever r=new MediaMetadataRetriever();try{
+  new Thread(()->{Bitmap result=null;boolean video=false;try{MediaMetadataRetriever r=new MediaMetadataRetriever();try{
    if("https".equals(uri.getScheme()))return;
-   r.setDataSource(this,uri);byte[] bytes=r.getEmbeddedPicture();
+   r.setDataSource(this,uri);video="yes".equalsIgnoreCase(r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO));byte[] bytes=r.getEmbeddedPicture();
    result=bytes!=null?Artwork.decode(bytes,512):Build.VERSION.SDK_INT>=27?r.getScaledFrameAtTime(0,MediaMetadataRetriever.OPTION_CLOSEST_SYNC,512,512):null;
   }finally{r.release();}}catch(Exception ignored){}
-  final Bitmap image=result;new Handler(getMainLooper()).post(()->{if(request==generation){artwork=image;update();}});
+  final Bitmap image=result;final boolean containsVideo=video;new Handler(getMainLooper()).post(()->{if(request==generation){if(image!=null)artwork=image;metadataHasVideo=containsVideo;hasVideo|=containsVideo;update();}});
   }).start();
  }
  public void suspendForWeb(){pause();session.setActive(false);stopForeground(STOP_FOREGROUND_REMOVE);}
- public void setAudioOnly(boolean value){audioOnly=value;if(player!=null){player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,value).build());if(value)player.clearVideoSurface();}update();}
- public void setSurface(android.view.Surface surface){if(player!=null)player.setVideoSurface(surface);}
+ public void setAudioOnly(boolean value){if(audioOnly==value)return;audioOnly=value;videoFrameReady=false;if(player!=null){player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO,value).build());if(value)player.clearVideoSurface();else if(videoSurface!=null&&videoSurface.isValid())player.setVideoSurface(videoSurface);}update();}
+ public void attachVideoSurface(Object owner,android.view.Surface surface){if(owner==null||surface==null||!surface.isValid()||owner==videoOwner&&surface==videoSurface)return;videoOwner=owner;videoSurface=surface;videoFrameReady=false;if(player!=null&&!audioOnly)player.setVideoSurface(surface);}
+ public boolean releaseVideoSurface(Object owner){if(owner!=videoOwner||owner==null)return false;if(player!=null)player.clearVideoSurface();videoOwner=null;videoSurface=null;videoFrameReady=false;return true;}
+ public boolean isVideoSurfaceOwner(Object owner){return owner!=null&&owner==videoOwner;}
+ public boolean hasVideoSurface(){return videoOwner!=null;}
+
  public boolean playing(){try{return player!=null&&player.isPlaying();}catch(Exception e){return false;}}
  public int duration(){try{return player==null?0:(int)Math.max(0,player.getDuration());}catch(Exception e){return 0;}}
  public int position(){try{return player==null?0:(int)player.getCurrentPosition();}catch(Exception e){return 0;}}
@@ -80,5 +86,5 @@ public class PlaybackService extends Service {
  }
 
  public IBinder onBind(Intent i){return null;}
- public void onDestroy(){generation++;spectrumCapture.close();if(player!=null)player.release();session.release();audio.abandonAudioFocusRequest(focus);if(noisyRegistered)unregisterReceiver(noisy);current=null;super.onDestroy();}
+ public void onDestroy(){generation++;videoOwner=null;videoSurface=null;spectrumCapture.close();if(player!=null)player.release();session.release();audio.abandonAudioFocusRequest(focus);if(noisyRegistered)unregisterReceiver(noisy);current=null;super.onDestroy();}
 }

@@ -1,10 +1,10 @@
 # Pulse Media Player for Android
 
-Pure-black Android 8+ audio and video player. Version 1.10 integrates the actual adblock-rust 0.13.5 network engine and a pinned uBlock Origin/EasyList rule and scriptlet snapshot for in-app YouTube browsing. Smooth-line normal mode, dot-wave matrix mode, previous/next tracks and offline playback remain available.
+Pure-black Android 8+ audio and video player. Version 1.11 adds compact appearance settings, a larger home media stage with Audio/Video switching, tap-to-show video controls, rotation and Fit/Fill, plus cashew-shaped previous/next buttons. The v1.10 native filtering engine and bundled YouTube page rules remain included.
 
 ## Download
 
-[Download Pulse Media Player v1.10 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.10.apk)
+[Download Pulse Media Player v1.11 APK](https://github.com/sduos4029-CODE/Audio_video-player-/raw/refs/heads/main/downloads/Pulse-Media-Player-v1.11.apk)
 
 This is a debug-signed preview build. Compilation, Android lint, JVM regression tests and Android-simulated rendering checks are available; physical-device codecs, live online playback and lock-screen behavior still require device verification.
 
@@ -13,7 +13,7 @@ This is a debug-signed preview build. Compilation, Android lint, JVM regression 
 - **Library** is a full searchable screen with Audio/Video/Downloads filters, multiple-file import, artwork, artist/duration metadata and track menus. Selecting a track opens the native player; imported URI permissions persist where the document provider supports it. Removing an item removes its library entry without deleting the original file.
 - **Online** accepts a YouTube watch/Shorts/live/share link, or a direct HTTPS media URL. Website pages from other services are not media URLs. HTTP errors and decoder failures can be inspected by tapping the error line at the bottom.
 - Direct streams use AndroidX Media3, including progressive files, HLS and DASH. Typical containers include MP3, WAV, MP4, WebM, Matroska and Ogg; actual codec and DRM support depend on the device. No player can promise all formats.
-- Direct/local sources start in **audio-only** mode. Tap their artwork or use **Menu → Watch current video**, then choose **Audio only** to return. Leaving the video screen, including locking the phone, detaches video and keeps service audio playing.
+- **Audio** is the default native mode. The home screen has **Audio / Video** controls and remembers your choice for available video tracks. Video plays inline across the home player’s width; swipe right on its thumbnail or use the fullscreen icon for the dedicated video screen. Tap the video to reveal centered previous/next, ±10-second and play/pause controls; they hide during playback. The top controls switch audio/video, choose Fit/Fill, rotate and exit fullscreen. Fit preserves the whole frame; Fill crops edges to cover the available area. Locking/backgrounding the player detaches video while service audio continues. Device verification is still needed.
 - **Download** saves permitted direct files (maximum 250 MB) into the offline library. Adaptive playlists, DRM sources and YouTube downloads are not supported. App-private downloads are deleted on uninstall.
 - **Menu** controls white/red/yellow/blue/purple/combination themes, normal/dot-matrix rendering, filled/outline buttons and opt-in lock-screen mode. Dot mode uses an explicit 5×7 font and coverage sampling for complete outlines. Embedded artwork or a local video frame replaces the default moon when available, and is rendered entirely as dots in matrix mode.
 - Playback includes previous/next tracks, ±10 seconds, seeking, device volume, audio focus, headphone-disconnect pause, media notification and system lock-screen controls. Select a track from the library to create a queue in its visible title order, including the current search/category filter. Previous/next use this stable snapshot; reaching the first/last track disables that direction. Finished tracks advance automatically; the last track stops without repeating. A separately opened direct URL has a one-item queue. Notification and media-session skip controls appear when that direction is available; Android controls their lock-screen presentation.
@@ -84,3 +84,19 @@ Validation for v1.9: 40 JVM/Robolectric tests pass, including PCM trace polarity
 ## v1.10 filtering validation
 
 The release includes native engine tests, an actual JNI/JVM smoke check with the bundled rules, browser fixtures for all three YouTube interfaces, and the Android regression suite. Browser fixtures fulfill every request locally; they do not measure live YouTube ad suppression. Android processor libraries are provided for arm64-v8a, armeabi-v7a and x86_64, with 16 KB ELF segment alignment. The 122,872-line rule source includes comments/directives and is not a parsed active-rule count. There are 201 bundled scriptlet/helper/replacement resources. See the linked implementation report for limitations.
+
+## v1.11 player interface
+
+The three-dot menu now opens a compact dark bottom sheet with Normal/Dot matrix segments, color swatches, two combination previews, filled/outline play and lock-screen switches. Theme choices remain in the sheet and apply immediately. Normal mode uses mirrored cashew-shaped previous/next buttons around the playback controls.
+
+The normal home player has a full-width media stage. Selecting Video expands that stage and uses the shared overlay player; Audio restores the cover, measured smooth line and audio controls. A local video frame or embedded artwork is used when available, with a fallback icon otherwise. Matrix mode retains dotted artwork and has dotted audio/video icons; its video action opens the dedicated player.
+
+Home and fullscreen video share the existing service player and position. Surface ownership prevents a closing old screen from clearing the new screen’s output. The current surface is reused when queue navigation creates a replacement decoder. Fullscreen rotation handles configuration changes in place. Screen-off/background transitions disable the video track without issuing an audio pause.
+
+These changes concern Pulse’s native local/direct-stream player; embedded YouTube pages retain their own interface. The separate native YouTube Music lab is not part of this APK.
+
+Previews: [Settings](docs/screenshots/settings-v1.11.png) · [Audio and cashew controls](docs/screenshots/native-audio-v1.11.png) · [Home video — Fit](docs/screenshots/home-video-v1.11.png) · [Home video — Fill](docs/screenshots/home-video-fill-v1.11.png) · [Portrait video](docs/screenshots/video-portrait-v1.11.png) · [Landscape video](docs/screenshots/video-landscape-v1.11.png). These are Android-simulated UI renders using a synthetic poster and playback state, not live decoded video frames.
+
+The Android regression suite covers compact settings persistence, live mode changes, full-width layout, cashew controls, tap-to-show/auto-hide, rotation requests, seek/track controls, Fit/Fill sizing and stale-surface ownership. Surface validity and playback state are stubbed in the relevant tests; physical-device video decoding, rotation, audio continuity and screen-lock behavior remain unverified.
+
+Validation for v1.11: 48 JVM/Robolectric tests pass; build and lint complete with six existing warnings. APK signature, 16 KB zip alignment, pinned filter asset hashes and packaged native libraries were checked.
